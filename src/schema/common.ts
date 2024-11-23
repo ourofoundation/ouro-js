@@ -45,6 +45,7 @@ const ConnectionTypeSchema = z.enum([
   "reference",
   "mention",
   "action",
+  "component",
 ]);
 
 const ConnectionSchema = z.object({

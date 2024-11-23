@@ -2,14 +2,20 @@ import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
 import { AssetSchema } from "./assets";
-import {
-  AssetTypeSchema,
-  MonetizationSchema,
-  VisibilitySchema,
-} from "./common";
+import { AssetTypeSchema, VisibilitySchema } from "./common";
 
 const ReplicationSchema = AssetSchema.extend({
   asset_type: AssetTypeSchema.refine((val) => val === "replication"),
+  metadata: z
+    .object({
+      schedule: z
+        .object({
+          cron: z.string(),
+        })
+        .passthrough()
+        .optional(),
+    })
+    .passthrough(),
 });
 
 const CreateReplicationSchema = ReplicationSchema.partial().extend({
@@ -20,12 +26,6 @@ const CreateReplicationSchema = ReplicationSchema.partial().extend({
   team_id: z.string().uuid().default("00000000-0000-0000-0000-000000000000"),
   org_id: z.string().uuid().default("00000000-0000-0000-0000-000000000000"),
   name_url_slug: z.string(),
-  metadata: z
-    .object({
-      edges: z.array(z.object({}).passthrough()),
-      nodes: z.array(z.object({}).passthrough()),
-    })
-    .passthrough(),
 });
 
 const UpdateReplicationSchema = z.object({
