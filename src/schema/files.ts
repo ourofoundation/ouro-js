@@ -16,20 +16,20 @@ const FileMetadataSchema = z.object({
 });
 
 const FileSchema = AssetSchema.extend({
-  asset_type: AssetTypeSchema.refine((val) => val === "file"),
+  asset_type: z.literal("file"),
   metadata: FileMetadataSchema,
 });
 
 const CreateFileSchema = z.discriminatedUnion("state", [
   // Success state, file is ready
   CreateAssetSchema.extend({
-    asset_type: AssetTypeSchema.refine((val) => val === "file"),
+    asset_type: z.literal("file"),
     state: z.literal("success"),
     metadata: FileMetadataSchema,
   }),
   // In-progress state, file is being processed
   CreateAssetSchema.extend({
-    asset_type: AssetTypeSchema.refine((val) => val === "file"),
+    asset_type: z.literal("file"),
     state: z.literal("in-progress"),
     metadata: z.object({
       type: z.string(),
@@ -45,7 +45,6 @@ const updateFileSchema = FileSchema.partial()
     last_updated: true,
   })
   .extend({
-    asset_type: AssetTypeSchema.refine((val) => val === "file"),
     last_updated: z.string().default(() => new Date().toISOString()),
   });
 
