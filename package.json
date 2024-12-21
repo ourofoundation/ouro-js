@@ -1,6 +1,6 @@
 {
   "name": "@ourofoundation/ouro-js",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Interact with the Ouro platform in browser and node.js environments",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
