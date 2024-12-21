@@ -1,9 +1,9 @@
 import { z } from "zod";
 
 const AssetTypeSchema = z.enum([
-  "user",
-  "organization",
-  "team",
+  // "user",
+  // "organization",
+  // "team",
   "dataset",
   "file",
   "service",
@@ -74,6 +74,8 @@ const PermissionSchema = z.object({
   }),
 });
 
+const StatusSchema = z.enum(["queued", "in-progress", "success", "error"]);
+
 type Role = z.infer<typeof RoleSchema>;
 type Connection = z.infer<typeof ConnectionSchema>;
 type Embedding = z.infer<typeof EmbeddingSchema>;
@@ -82,6 +84,7 @@ type Monetization = z.infer<typeof MonetizationSchema>;
 type AssetTypes = z.infer<typeof AssetTypeSchema>;
 type PurchaseAsset = z.infer<typeof PurchaseAssetSchema>;
 type Permission = z.infer<typeof PermissionSchema>;
+type Status = z.infer<typeof StatusSchema>;
 
 export {
   RoleSchema,
@@ -92,6 +95,7 @@ export {
   AssetTypeSchema,
   PurchaseAssetSchema,
   PermissionSchema,
+  StatusSchema,
   type Role,
   type Connection,
   type Embedding,
@@ -100,4 +104,5 @@ export {
   type AssetTypes,
   type PurchaseAsset,
   type Permission,
+  type Status,
 };

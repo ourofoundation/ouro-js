@@ -4,7 +4,6 @@ import { RoleSchema, VisibilitySchema } from "./common";
 
 const OrganizationsSchema = z.object({
   id: z.string().uuid(),
-  owner_id: z.string().uuid(),
   name: z.string(),
   avatar_path: z.string().nullable().optional(),
   mission: z.string().nullable().optional(),

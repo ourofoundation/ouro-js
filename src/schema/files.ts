@@ -1,18 +1,63 @@
 import { z } from "zod";
 
-import { AssetSchema } from "./assets";
+import { AssetSchema, CreateAssetSchema } from "./assets";
+import { AssetTypeSchema } from "./common";
 
-const FileSchema = AssetSchema.extend({
-  metadata: z.object({
-    eTag: z.string(),
-    size: z.number(),
-    mimetype: z.string(),
-    cacheControl: z.string(),
-    lastModified: z.string(),
-  }),
-  // preview: z.array(z.object({}).passthrough()).optional().nullable(),
+const FileMetadataSchema = z.object({
+  id: z.string().uuid(), // The id of the file object
+  path: z.string(), // The path of the file in storage
+  bucket: z.enum(["public-files", "files"]),
+  name: z.string(),
+  type: z.string(),
+  size: z.number(),
+  // If the file is an image, we store width and height
+  width: z.number().optional(),
+  height: z.number().optional(),
 });
 
-type File = z.infer<typeof FileSchema>;
+const FileSchema = AssetSchema.extend({
+  asset_type: AssetTypeSchema.refine((val) => val === "file"),
+  metadata: FileMetadataSchema,
+});
 
-export { FileSchema, type File };
+const CreateFileSchema = z.discriminatedUnion("state", [
+  // Success state, file is ready
+  CreateAssetSchema.extend({
+    asset_type: AssetTypeSchema.refine((val) => val === "file"),
+    state: z.literal("success"),
+    metadata: FileMetadataSchema,
+  }),
+  // In-progress state, file is being processed
+  CreateAssetSchema.extend({
+    asset_type: AssetTypeSchema.refine((val) => val === "file"),
+    state: z.literal("in-progress"),
+    metadata: z.object({
+      type: z.string(),
+    }),
+  }),
+]);
+
+const updateFileSchema = FileSchema.partial()
+  .omit({
+    user_id: true,
+    id: true,
+    created_at: true,
+    last_updated: true,
+  })
+  .extend({
+    asset_type: AssetTypeSchema.refine((val) => val === "file"),
+    last_updated: z.string().default(() => new Date().toISOString()),
+  });
+
+type File = z.infer<typeof FileSchema>;
+type CreateFile = z.infer<typeof CreateFileSchema>;
+type UpdateFile = z.infer<typeof updateFileSchema>;
+
+export {
+  FileSchema,
+  CreateFileSchema,
+  updateFileSchema,
+  type File,
+  type CreateFile,
+  type UpdateFile,
+};

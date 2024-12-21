@@ -9,27 +9,22 @@ import {
   VisibilitySchema,
 } from "./common";
 
-const PostSchema = AssetSchema.extend({
-  name: z.string().nullable(),
-  asset_type: AssetTypeSchema.refine((x) => ["post", "comment"].includes(x)),
-  preview: z
-    .object({
-      type: z.string().refine((x) => x === "doc"),
-      content: z.array(z.object({}).passthrough()),
-    })
-    .optional()
-    .nullable()
-    .default({ type: "doc", content: [] }),
-});
-
 const TipTapSchema = z.object({
-  type: z.string().refine((x) => x === "doc"),
+  type: z.literal("doc"),
   content: z.array(z.object({}).passthrough()),
 });
 
 const ContentSchema = z.object({
   json: TipTapSchema,
   text: z.string(),
+});
+
+const PostSchema = AssetSchema.extend({
+  name: z.string().nullable(),
+  asset_type: AssetTypeSchema.refine((x) => ["post", "comment"].includes(x)),
+  // TODO: make this ContentSchema
+  preview: TipTapSchema.default({ type: "doc", content: [] }),
+  content: ContentSchema,
 });
 
 const CreatePostSchema = PostSchema.partial()

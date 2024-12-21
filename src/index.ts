@@ -1,4 +1,9 @@
-import { Asset, type AssetSchema } from "./schema/assets";
+import {
+  Asset,
+  CreateAssetSchema,
+  type AssetSchema,
+  type CreateAsset,
+} from "./schema/assets";
 import {
   CommentSchema,
   CreateCommentSchema,
@@ -47,7 +52,14 @@ import {
   type UpdateDataset,
 } from "./schema/datasets";
 
-import { FileSchema, type File } from "./schema/files";
+import {
+  FileSchema,
+  CreateFileSchema,
+  type File,
+  type CreateFile,
+  type UpdateFile,
+  updateFileSchema,
+} from "./schema/files";
 
 import { NotificationSchema, type Notification } from "./schema/notifications";
 
@@ -126,6 +138,10 @@ import {
   type UpdateBlueprint,
 } from "./schema/blueprints";
 
+// Utils
+import { filterListToString } from "./utils/dataset";
+import { getAssetUrl, createUrlSlug, createNameUrlSlug } from "./utils/navigate";
+
 export {
   // Root
   RoleSchema,
@@ -143,6 +159,8 @@ export {
   // Assets
   Asset,
   type AssetSchema,
+  CreateAssetSchema,
+  type CreateAsset,
   CommentSchema,
   CreateCommentSchema,
   type Comment,
@@ -172,6 +190,10 @@ export {
   // Files
   FileSchema,
   type File,
+  CreateFileSchema,
+  type CreateFile,
+  updateFileSchema,
+  type UpdateFile,
   // Notifications
   NotificationSchema,
   type Notification,
@@ -236,4 +258,9 @@ export {
   type Blueprint,
   type CreateBlueprint,
   type UpdateBlueprint,
+  // Utils
+  filterListToString,
+  getAssetUrl,
+  createUrlSlug,
+  createNameUrlSlug
 };

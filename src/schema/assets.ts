@@ -3,12 +3,14 @@ import { z } from "zod";
 import {
   AssetTypeSchema,
   MonetizationSchema,
+  StatusSchema,
   VisibilitySchema,
 } from "./common";
 import { OrganizationsSchema } from "./organizations";
 import { TeamSchema } from "./teams";
 
 import { ProfileSchema } from "./users";
+import { uuidv7 } from "uuidv7";
 
 const AssetSchema = z.object({
   id: z.string().uuid(),
@@ -36,9 +38,36 @@ const AssetSchema = z.object({
   // Metadata information
   metadata: z.object({}).passthrough().optional().nullable(),
   preview: z.array(z.object({}).passthrough()).optional().nullable(),
+  state: StatusSchema.optional().nullable(),
   created_at: z.string(),
   last_updated: z.string(),
 });
 
-export type Asset = z.infer<typeof AssetSchema>;
-export { AssetSchema };
+const CreateAssetSchema = AssetSchema.partial()
+  .omit({
+    user_id: true,
+  })
+  .extend({
+    id: z
+      .string()
+      .uuid()
+      .default(() => uuidv7()),
+    team_id: z
+      .string()
+      .uuid()
+      .nullish()
+      .default("00000000-0000-0000-0000-000000000000"),
+    org_id: z
+      .string()
+      .uuid()
+      .nullish()
+      .default("00000000-0000-0000-0000-000000000000"),
+    name_url_slug: z.string().optional().nullable(),
+    state: StatusSchema.optional().default("success"),
+    visibility: VisibilitySchema.optional().default("public"),
+  });
+
+type Asset = z.infer<typeof AssetSchema>;
+type CreateAsset = z.infer<typeof CreateAssetSchema>;
+
+export { AssetSchema, CreateAssetSchema, type Asset, type CreateAsset };
