@@ -140,7 +140,13 @@ import {
 
 // Utils
 import { filterListToString } from "./utils/dataset";
-import { getAssetUrl, createUrlSlug, createNameUrlSlug } from "./utils/navigate";
+import {
+  getAssetUrl,
+  createUrlSlug,
+  createNameUrlSlug,
+} from "./utils/navigate";
+
+import { parseMarkdown } from "./utils/air/markdown-parser";
 
 export {
   // Root
@@ -262,5 +268,6 @@ export {
   filterListToString,
   getAssetUrl,
   createUrlSlug,
-  createNameUrlSlug
+  createNameUrlSlug,
+  parseMarkdown,
 };

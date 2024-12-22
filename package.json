@@ -1,6 +1,6 @@
 {
   "name": "@ourofoundation/ouro-js",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Interact with the Ouro platform in browser and node.js environments",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -23,7 +23,7 @@
     "dotenv": "^16.4.5",
     "image-size": "^1.1.1",
     "js-yaml": "^4.1.0",
-    "marked": "^14.1.3",
+    "marked": "^14.1.4",
     "mime-types": "^2.1.35",
     "music-metadata": "^10.5.1",
     "node-sql-parser": "^5.3.3",
