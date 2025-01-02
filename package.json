@@ -1,12 +1,13 @@
 {
   "name": "@ourofoundation/ouro-js",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Interact with the Ouro platform in browser and node.js environments",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "publish": "npm run build && npm publish"
   },
   "author": "ourofoundation",
   "license": "ISC",

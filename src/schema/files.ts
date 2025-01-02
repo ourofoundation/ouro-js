@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 import { AssetSchema, CreateAssetSchema } from "./assets";
-import { AssetTypeSchema } from "./common";
 
 const FileMetadataSchema = z.object({
   id: z.string().uuid(), // The id of the file object
@@ -16,21 +15,21 @@ const FileMetadataSchema = z.object({
 });
 
 const FileSchema = AssetSchema.extend({
-  asset_type: z.literal("file"),
+  asset_type: z.literal("file").default("file"),
   metadata: FileMetadataSchema,
 });
 
 const CreateFileSchema = z.discriminatedUnion("state", [
   // Success state, file is ready
   CreateAssetSchema.extend({
-    asset_type: z.literal("file"),
-    state: z.literal("success"),
+    asset_type: z.literal("file").default("file"),
+    state: z.literal("success").default("success"),
     metadata: FileMetadataSchema,
   }),
   // In-progress state, file is being processed
   CreateAssetSchema.extend({
-    asset_type: z.literal("file"),
-    state: z.literal("in-progress"),
+    asset_type: z.literal("file").default("file"),
+    state: z.literal("in-progress").default("in-progress"),
     metadata: z.object({
       type: z.string(),
     }),

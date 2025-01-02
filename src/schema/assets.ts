@@ -46,6 +46,12 @@ const AssetSchema = z.object({
 const CreateAssetSchema = AssetSchema.partial()
   .omit({
     user_id: true,
+    // Remove extended foreign fields
+    user: true,
+    organization: true,
+    team: true,
+    // remove added slug
+    slug: true,
   })
   .extend({
     id: z
@@ -62,9 +68,19 @@ const CreateAssetSchema = AssetSchema.partial()
       .uuid()
       .nullish()
       .default("00000000-0000-0000-0000-000000000000"),
+    name: z
+      .string()
+      .min(1, {
+        message: "Name cannot be empty",
+      })
+      .max(255, {
+        message: "Name must be less than 255 characters",
+      }), // name is required for all assets but posts and conversations
     name_url_slug: z.string().optional().nullable(),
     state: StatusSchema.optional().default("success"),
     visibility: VisibilitySchema.optional().default("public"),
+    created_at: z.string().default(() => new Date().toISOString()),
+    last_updated: z.string().default(() => new Date().toISOString()),
   });
 
 type Asset = z.infer<typeof AssetSchema>;

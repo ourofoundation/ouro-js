@@ -14,12 +14,12 @@ const DatasetFromFileMetadataSchema = z.object({
 
 const DatasetMetadataSchema = z.object({
   table_name: z.string(),
-  schema: z.literal("datasets"),
+  schema: z.literal("datasets").default("datasets"),
   columns: z.array(z.string()),
 });
 
 const DatasetSchema = AssetSchema.extend({
-  asset_type: z.literal("dataset"),
+  asset_type: z.literal("dataset").default("dataset"),
   metadata: DatasetMetadataSchema.extend({
     ...DatasetFromFileMetadataSchema.partial().shape,
   }),
@@ -27,7 +27,7 @@ const DatasetSchema = AssetSchema.extend({
 });
 
 const CreateDatasetFromFileSchema = CreateAssetSchema.extend({
-  asset_type: z.literal("dataset"),
+  asset_type: z.literal("dataset").default("dataset"),
   metadata: DatasetMetadataSchema.extend({
     ...DatasetFromFileMetadataSchema.shape,
   }),
@@ -35,7 +35,7 @@ const CreateDatasetFromFileSchema = CreateAssetSchema.extend({
 });
 
 const CreateDatasetFromSchemaSchema = CreateAssetSchema.extend({
-  asset_type: z.literal("dataset"),
+  asset_type: z.literal("dataset").default("dataset"),
   metadata: DatasetMetadataSchema,
   preview: z.array(z.object({}).passthrough()),
 });
@@ -48,7 +48,7 @@ const updateDatasetSchema = DatasetSchema.partial()
     last_updated: true,
   })
   .extend({
-    asset_type: z.literal("dataset"),
+    asset_type: z.literal("dataset").default("dataset"),
     last_updated: z.string().default(() => new Date().toISOString()),
   });
 

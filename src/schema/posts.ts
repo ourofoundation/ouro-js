@@ -1,23 +1,26 @@
-import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
-import { AssetSchema } from "./assets";
-import {
-  AssetTypeSchema,
-  ConnectionSchema,
-  MonetizationSchema,
-  VisibilitySchema,
-} from "./common";
+import { AssetSchema, CreateAssetSchema } from "./assets";
+import { AssetTypeSchema, ConnectionSchema } from "./common";
 
 const TipTapSchema = z.object({
   type: z.literal("doc"),
-  content: z.array(z.object({}).passthrough()),
+  content: z.array(
+    z
+      .object({
+        content: z.array(z.object({}).passthrough()).optional(),
+        attrs: z.object({}).passthrough().optional(),
+      })
+      .passthrough()
+  ),
 });
 
-const ContentSchema = z.object({
-  json: TipTapSchema,
-  text: z.string(),
-});
+const ContentSchema = z
+  .object({
+    json: TipTapSchema,
+    text: z.string(),
+  })
+  .default({ json: { type: "doc", content: [] }, text: "" });
 
 const PostSchema = AssetSchema.extend({
   name: z.string().nullable(),
@@ -27,33 +30,17 @@ const PostSchema = AssetSchema.extend({
   content: ContentSchema,
 });
 
-const CreatePostSchema = PostSchema.partial()
-  .omit({
-    id: true,
-    user_id: true,
-  })
-  .extend({
-    id: z
-      .string()
-      .uuid()
-      .default(() => uuidv7()),
-    team_id: z.string().uuid().default("00000000-0000-0000-0000-000000000000"),
-    org_id: z.string().uuid().default("00000000-0000-0000-0000-000000000000"),
-    asset_type: AssetTypeSchema.default("post").refine((x) => x === "post"),
-    name: z
-      .string()
-      .default("")
-      .transform((x) => x.trim())
-      .transform((x) => x || null),
-    visibility: VisibilitySchema.default("private"),
-    monetization: MonetizationSchema.default("none"),
-    // preview: z.object({
-    //   type: z.string().refine((x) => x === "doc"),
-    //   content: z.array(z.object({}).passthrough()),
-    // }),
-    created_at: z.string().default(() => new Date().toISOString()),
-    last_updated: z.string().default(() => new Date().toISOString()),
-  });
+const CreatePostSchema = CreateAssetSchema.extend({
+  asset_type: z.literal("post").default("post"),
+  name: z
+    .string()
+    .optional()
+    .nullable()
+    .default("")
+    .transform((x) => x?.trim())
+    .transform((x) => x || null),
+  preview: TipTapSchema,
+});
 
 const ReadPostSchema = PostSchema.extend({
   content: ContentSchema.optional()
@@ -73,20 +60,9 @@ const ReadPostsSchema = z.array(ReadPostSchema);
 
 const ListPostsSchema = z.array(PostSchema);
 
-const updatePostSchema = z.object({
-  name: z.string().nullable().optional(),
-  description: z.string().nullable().optional(),
-  visibility: VisibilitySchema.nullable().optional(),
-  monetization: MonetizationSchema.nullable().optional(),
-  price: z.number().nullable().optional(),
-  metadata: z
-    .object({
-      table_name: z.string(),
-    })
-    .passthrough()
-    .optional()
-    .nullable(),
-  preview: z.array(z.object({}).passthrough()).optional().nullable(),
+const UpdatePostSchema = CreatePostSchema.omit({
+  last_updated: true,
+}).extend({
   last_updated: z.string().default(() => new Date().toISOString()),
 });
 
@@ -95,7 +71,7 @@ type CreatePost = z.infer<typeof CreatePostSchema>;
 type ListPosts = z.infer<typeof ListPostsSchema>;
 type ReadPost = z.infer<typeof ReadPostSchema>;
 type ReadPosts = z.infer<typeof ReadPostsSchema>;
-type UpdatePost = z.infer<typeof updatePostSchema>;
+type UpdatePost = z.infer<typeof UpdatePostSchema>;
 type Content = z.infer<typeof ContentSchema>;
 type TipTap = z.infer<typeof TipTapSchema>;
 
@@ -107,7 +83,7 @@ export {
   ListPostsSchema,
   ReadPostSchema,
   ReadPostsSchema,
-  updatePostSchema,
+  UpdatePostSchema,
   type Post,
   type CreatePost,
   type ListPosts,

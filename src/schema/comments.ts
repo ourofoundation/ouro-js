@@ -2,10 +2,9 @@ import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 
 import { AssetSchema } from "./assets";
-import { AssetTypeSchema } from "./common";
 
 const CommentSchema = AssetSchema.extend({
-  asset_type: AssetTypeSchema.refine((x) => ["comment"].includes(x)),
+  asset_type: z.literal("comment").default("comment"),
   preview: z
     .object({
       type: z.string().refine((x) => x === "doc"),
@@ -22,9 +21,7 @@ const CreateCommentSchema = CommentSchema.partial()
     user_id: true,
   })
   .extend({
-    asset_type: AssetTypeSchema.default("comment").refine(
-      (x) => x === "comment"
-    ),
+    asset_type: z.literal("comment").default("comment"),
     id: z.string().default(() => uuidv7()),
     name: z.string().default(""),
     created_at: z.string().default(() => new Date().toISOString()),
