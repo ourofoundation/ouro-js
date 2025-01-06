@@ -1,9 +1,9 @@
 import { z } from "zod";
 
 const AssetTypeSchema = z.enum([
-  // "user",
-  // "organization",
-  // "team",
+  "user",
+  "organization",
+  "team",
   "dataset",
   "file",
   "service",
