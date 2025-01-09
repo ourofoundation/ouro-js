@@ -25,6 +25,9 @@ const createUrlSlug = (asset: any) => {
   if (asset.asset_type === "conversation") {
     return `/conversations/${asset.id}`;
   }
+  if (asset.asset_type === "comment") {
+    return `/comments/${asset.id}`;
+  }
   const entityName =
     asset.org_id !== "00000000-0000-0000-0000-000000000000"
       ? asset.organization.name
@@ -50,22 +53,7 @@ const getAssetUrl = (
   const assetType = asset?.asset_type || asset?.assetType;
   const slug = asset?.slug || createUrlSlug(asset);
   const pathPostfix = config?.intent ? `?intent=${config.intent}` : "";
-  // Gradual conversion to new URL
-  let url = [
-    "file",
-    "dataset",
-    "service",
-    "route",
-    "post",
-    "blueprint",
-    "replication",
-    "conversation",
-  ].includes(assetType)
-    ? `${slug}${pathPostfix}`
-    : ["comment"].includes(assetType)
-    ? getParentAssetUrl(asset, config)
-    : "#";
-
+  let url = `${slug}${pathPostfix}`;
   if (config?.filters) {
     url += `?filters=${filterListToString(config.filters)}`;
   }

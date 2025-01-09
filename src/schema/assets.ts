@@ -21,6 +21,8 @@ const AssetSchema = z.object({
   team_id: z.string().uuid(),
   team: TeamSchema.partial().optional(),
   parent_id: z.string().uuid().optional().nullable(),
+  // parent: z.lazy(() => AssetSchema.partial()).optional(),
+  parent: z.object({}).passthrough().optional(),
   asset_type: AssetTypeSchema,
   name: z.string(),
   name_url_slug: z.string().optional().nullable(),

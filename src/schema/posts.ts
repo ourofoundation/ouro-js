@@ -1,18 +1,28 @@
 import { z } from "zod";
 
 import { AssetSchema, CreateAssetSchema } from "./assets";
-import { AssetTypeSchema, ConnectionSchema } from "./common";
+import { AssetTypeSchema } from "./common";
+
+const TipTapNode: z.ZodType<any> = z.lazy(() =>
+  z.object({
+    type: z.string(),
+    content: z.array(TipTapNode).optional(),
+    attrs: z.record(z.any()).optional(),
+    marks: z
+      .array(
+        z.object({
+          type: z.string(),
+          attrs: z.record(z.any()).optional(),
+        })
+      )
+      .optional(),
+    text: z.string().optional(), // For text nodes
+  })
+);
 
 const TipTapSchema = z.object({
   type: z.literal("doc"),
-  content: z.array(
-    z
-      .object({
-        content: z.array(z.object({}).passthrough()).optional(),
-        attrs: z.object({}).passthrough().optional(),
-      })
-      .passthrough()
-  ),
+  content: z.array(TipTapNode),
 });
 
 const ContentSchema = z
@@ -52,7 +62,8 @@ const ReadPostSchema = PostSchema.extend({
   reactions: z.array(z.object({}).passthrough()).default([]),
   views: z.number().default(0),
   commentCount: z.number().default(0),
-  parent: ConnectionSchema.optional().nullable(),
+  // We have this on asset now
+  // parent: ConnectionSchema.optional().nullable(),
   pinned: z.boolean().default(false),
 });
 

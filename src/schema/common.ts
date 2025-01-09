@@ -68,10 +68,17 @@ const PurchaseAssetSchema = z.object({
 });
 
 const PermissionSchema = z.object({
+  id: z.string().uuid(),
   role: RoleSchema,
   user: z.object({
     user_id: z.string().uuid(),
   }),
+  user_id: z.string().uuid().nullable(),
+  org_id: z.string().uuid().nullable(),
+  asset_type: AssetTypeSchema,
+  asset_id: z.string().uuid(),
+  created_at: z.string(),
+  last_updated: z.string(),
 });
 
 const StatusSchema = z.enum(["queued", "in-progress", "success", "error"]);

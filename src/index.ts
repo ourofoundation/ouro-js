@@ -147,6 +147,7 @@ import {
 } from "./utils/navigate";
 
 import { parseMarkdown } from "./utils/air/markdown-parser";
+import { getReferencesInContent } from "./utils/air";
 
 export {
   // Root
@@ -270,4 +271,5 @@ export {
   createUrlSlug,
   createNameUrlSlug,
   parseMarkdown,
+  getReferencesInContent,
 };
