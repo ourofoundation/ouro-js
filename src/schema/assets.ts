@@ -85,7 +85,27 @@ const CreateAssetSchema = AssetSchema.partial()
     last_updated: z.string().default(() => new Date().toISOString()),
   });
 
+const UpdateAssetSchema = AssetSchema.partial().omit({
+  id: true,
+  user_id: true,
+  created_at: true,
+  // Remove extended foreign fields
+  user: true,
+  organization: true,
+  team: true,
+  // remove added slug
+  slug: true,
+});
+
 type Asset = z.infer<typeof AssetSchema>;
 type CreateAsset = z.infer<typeof CreateAssetSchema>;
+type UpdateAsset = z.infer<typeof UpdateAssetSchema>;
 
-export { AssetSchema, CreateAssetSchema, type Asset, type CreateAsset };
+export {
+  AssetSchema,
+  CreateAssetSchema,
+  UpdateAssetSchema,
+  type Asset,
+  type CreateAsset,
+  type UpdateAsset,
+};

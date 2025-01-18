@@ -1,6 +1,8 @@
 import {
   Asset,
   CreateAssetSchema,
+  UpdateAsset,
+  UpdateAssetSchema,
   type AssetSchema,
   type CreateAsset,
 } from "./schema/assets";
@@ -167,7 +169,9 @@ export {
   Asset,
   type AssetSchema,
   CreateAssetSchema,
+  UpdateAssetSchema,
   type CreateAsset,
+  type UpdateAsset,
   CommentSchema,
   CreateCommentSchema,
   type Comment,

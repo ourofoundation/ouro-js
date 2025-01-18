@@ -71,11 +71,16 @@ const ReadPostsSchema = z.array(ReadPostSchema);
 
 const ListPostsSchema = z.array(PostSchema);
 
-const UpdatePostSchema = CreatePostSchema.omit({
-  last_updated: true,
-}).extend({
-  last_updated: z.string().default(() => new Date().toISOString()),
-});
+const UpdatePostSchema = PostSchema.partial()
+  .omit({
+    user_id: true,
+    id: true,
+    created_at: true,
+    last_updated: true,
+  })
+  .extend({
+    last_updated: z.string().default(() => new Date().toISOString()),
+  });
 
 type Post = z.infer<typeof PostSchema>;
 type CreatePost = z.infer<typeof CreatePostSchema>;
