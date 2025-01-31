@@ -54,18 +54,13 @@ const MessageSchema = z.object({
   metadata: z.object({}).passthrough().nullable().optional(),
 });
 
-type Conversation = z.infer<typeof ConversationSchema>;
-type CreateConversation = z.infer<typeof CreateConversationSchema>;
-type UpdateConversation = z.infer<typeof UpdateConversationSchema>;
-type Message = z.infer<typeof MessageSchema>;
-
 export {
   MessageSchema,
   UpdateConversationSchema,
   CreateConversationSchema,
   ConversationSchema,
-  type Conversation,
-  type CreateConversation,
-  type UpdateConversation,
-  type Message,
 };
+export type Conversation = z.infer<typeof ConversationSchema>;
+export type CreateConversation = z.infer<typeof CreateConversationSchema>;
+export type UpdateConversation = z.infer<typeof UpdateConversationSchema>;
+export type Message = z.infer<typeof MessageSchema>;

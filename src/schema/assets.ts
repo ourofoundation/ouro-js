@@ -97,15 +97,7 @@ const UpdateAssetSchema = AssetSchema.partial().omit({
   slug: true,
 });
 
-type Asset = z.infer<typeof AssetSchema>;
-type CreateAsset = z.infer<typeof CreateAssetSchema>;
-type UpdateAsset = z.infer<typeof UpdateAssetSchema>;
-
-export {
-  AssetSchema,
-  CreateAssetSchema,
-  UpdateAssetSchema,
-  type Asset,
-  type CreateAsset,
-  type UpdateAsset,
-};
+export { AssetSchema, CreateAssetSchema, UpdateAssetSchema };
+export type Asset = z.infer<typeof AssetSchema>;
+export type CreateAsset = z.infer<typeof CreateAssetSchema>;
+export type UpdateAsset = z.infer<typeof UpdateAssetSchema>;

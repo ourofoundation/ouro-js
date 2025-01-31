@@ -83,16 +83,6 @@ const PermissionSchema = z.object({
 
 const StatusSchema = z.enum(["queued", "in-progress", "success", "error"]);
 
-type Role = z.infer<typeof RoleSchema>;
-type Connection = z.infer<typeof ConnectionSchema>;
-type Embedding = z.infer<typeof EmbeddingSchema>;
-type Visibility = z.infer<typeof VisibilitySchema>;
-type Monetization = z.infer<typeof MonetizationSchema>;
-type AssetTypes = z.infer<typeof AssetTypeSchema>;
-type PurchaseAsset = z.infer<typeof PurchaseAssetSchema>;
-type Permission = z.infer<typeof PermissionSchema>;
-type Status = z.infer<typeof StatusSchema>;
-
 export {
   RoleSchema,
   VisibilitySchema,
@@ -103,13 +93,14 @@ export {
   PurchaseAssetSchema,
   PermissionSchema,
   StatusSchema,
-  type Role,
-  type Connection,
-  type Embedding,
-  type Visibility,
-  type Monetization,
-  type AssetTypes,
-  type PurchaseAsset,
-  type Permission,
-  type Status,
 };
+
+export type Role = z.infer<typeof RoleSchema>;
+export type Connection = z.infer<typeof ConnectionSchema>;
+export type Embedding = z.infer<typeof EmbeddingSchema>;
+export type Visibility = z.infer<typeof VisibilitySchema>;
+export type Monetization = z.infer<typeof MonetizationSchema>;
+export type AssetTypes = z.infer<typeof AssetTypeSchema>;
+export type PurchaseAsset = z.infer<typeof PurchaseAssetSchema>;
+export type Permission = z.infer<typeof PermissionSchema>;
+export type Status = z.infer<typeof StatusSchema>;

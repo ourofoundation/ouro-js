@@ -43,6 +43,5 @@ const NotificationSchema = z.object({
   last_updated: z.string(),
 });
 
-type Notification = z.infer<typeof NotificationSchema>;
-
-export { NotificationSchema, type Notification };
+export { NotificationSchema };
+export type Notification = z.infer<typeof NotificationSchema>;

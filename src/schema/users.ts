@@ -35,15 +35,7 @@ const UpdateProfileSchema = ProfileSchema.partial().omit({
 //   user_id: z.string().uuid(),
 // })
 
-type Profile = z.infer<typeof ProfileSchema>;
-type UpdateProfile = z.infer<typeof UpdateProfileSchema>;
-type ReadProfile = z.infer<typeof ReadProfileSchema>;
-
-export {
-  ProfileSchema,
-  ReadProfileSchema,
-  UpdateProfileSchema,
-  type Profile,
-  type UpdateProfile,
-  type ReadProfile,
-};
+export { ProfileSchema, ReadProfileSchema, UpdateProfileSchema };
+export type Profile = z.infer<typeof ProfileSchema>;
+export type UpdateProfile = z.infer<typeof UpdateProfileSchema>;
+export type ReadProfile = z.infer<typeof ReadProfileSchema>;

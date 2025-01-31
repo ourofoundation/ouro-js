@@ -38,15 +38,7 @@ const UpdateReplicationSchema = z.object({
   last_updated: z.string().default(() => new Date().toISOString()),
 });
 
-type Replication = z.infer<typeof ReplicationSchema>;
-type CreateReplication = z.infer<typeof CreateReplicationSchema>;
-type UpdateReplication = z.infer<typeof UpdateReplicationSchema>;
-
-export {
-  ReplicationSchema,
-  CreateReplicationSchema,
-  UpdateReplicationSchema,
-  type Replication,
-  type CreateReplication,
-  type UpdateReplication,
-};
+export { ReplicationSchema, CreateReplicationSchema, UpdateReplicationSchema };
+export type Replication = z.infer<typeof ReplicationSchema>;
+export type CreateReplication = z.infer<typeof CreateReplicationSchema>;
+export type UpdateReplication = z.infer<typeof UpdateReplicationSchema>;

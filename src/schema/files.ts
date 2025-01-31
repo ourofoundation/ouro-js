@@ -47,15 +47,7 @@ const updateFileSchema = FileSchema.partial()
     last_updated: z.string().default(() => new Date().toISOString()),
   });
 
-type File = z.infer<typeof FileSchema>;
-type CreateFile = z.infer<typeof CreateFileSchema>;
-type UpdateFile = z.infer<typeof updateFileSchema>;
-
-export {
-  FileSchema,
-  CreateFileSchema,
-  updateFileSchema,
-  type File,
-  type CreateFile,
-  type UpdateFile,
-};
+export { FileSchema, CreateFileSchema, updateFileSchema };
+export type File = z.infer<typeof FileSchema>;
+export type CreateFile = z.infer<typeof CreateFileSchema>;
+export type UpdateFile = z.infer<typeof updateFileSchema>;

@@ -82,15 +82,6 @@ const UpdatePostSchema = PostSchema.partial()
     last_updated: z.string().default(() => new Date().toISOString()),
   });
 
-type Post = z.infer<typeof PostSchema>;
-type CreatePost = z.infer<typeof CreatePostSchema>;
-type ListPosts = z.infer<typeof ListPostsSchema>;
-type ReadPost = z.infer<typeof ReadPostSchema>;
-type ReadPosts = z.infer<typeof ReadPostsSchema>;
-type UpdatePost = z.infer<typeof UpdatePostSchema>;
-type Content = z.infer<typeof ContentSchema>;
-type TipTap = z.infer<typeof TipTapSchema>;
-
 export {
   TipTapSchema,
   ContentSchema,
@@ -100,12 +91,12 @@ export {
   ReadPostSchema,
   ReadPostsSchema,
   UpdatePostSchema,
-  type Post,
-  type CreatePost,
-  type ListPosts,
-  type ReadPost,
-  type ReadPosts,
-  type UpdatePost,
-  type Content,
-  type TipTap,
 };
+export type Post = z.infer<typeof PostSchema>;
+export type CreatePost = z.infer<typeof CreatePostSchema>;
+export type ListPosts = z.infer<typeof ListPostsSchema>;
+export type ReadPost = z.infer<typeof ReadPostSchema>;
+export type ReadPosts = z.infer<typeof ReadPostsSchema>;
+export type UpdatePost = z.infer<typeof UpdatePostSchema>;
+export type Content = z.infer<typeof ContentSchema>;
+export type TipTap = z.infer<typeof TipTapSchema>;

@@ -1,4 +1,4 @@
-import { Content } from "@/schema/posts";
+import { Content } from "../../schema/posts";
 
 interface InlineAssetAttrs {
   id: string;
@@ -27,7 +27,7 @@ function getReferencesInContent(json: Content["json"]) {
       user_id: item.attrs.id,
       username: item.attrs.label,
     }))
-    .reduce((unique: any[], item) => {
+    .reduce((unique: any[], item: any) => {
       if (!unique.some((u) => u === item.user_id)) {
         unique.push(item.user_id);
       }
@@ -44,7 +44,7 @@ function getReferencesInContent(json: Content["json"]) {
       id: attrs.id,
       assetType: attrs.assetType,
     }))
-    .reduce((unique: any[], item) => {
+    .reduce((unique: any[], item: any) => {
       if (!unique.some((u) => u.id === item.id)) {
         unique.push(item);
       }

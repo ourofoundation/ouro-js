@@ -1,18 +1,18 @@
 {
   "compilerOptions": {
-    "target": "es2016",
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "target": "es2018",
+    "module": "esnext",
+    "lib": ["es2018", "dom"],
     "declaration": true,
-    "outDir": "./dist",
+    "declarationDir": "dist",
+    "outDir": "dist",
     "strict": true,
-    "sourceMap": true,
     "esModuleInterop": true,
-    "baseUrl": "./",
-    "paths": {
-      "@/*": ["./src/*"]
-    }
+    "moduleResolution": "node",
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "preserveConstEnums": true
   },
   "include": ["src"],
-  "exclude": ["node_modules", "**/__tests__/*"]
+  "exclude": ["node_modules", "dist"]
 }

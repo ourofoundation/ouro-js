@@ -35,15 +35,7 @@ const routeSchema = z.object({
   last_updated: z.string(),
 });
 
-type Service = z.infer<typeof serviceSchema>;
-type Route = z.infer<typeof routeSchema>;
-type AuthType = z.infer<typeof authType>;
-
-export {
-  routeSchema,
-  serviceSchema,
-  authType,
-  type Service,
-  type Route,
-  type AuthType,
-};
+export { routeSchema, serviceSchema, authType };
+export type Service = z.infer<typeof serviceSchema>;
+export type Route = z.infer<typeof routeSchema>;
+export type AuthType = z.infer<typeof authType>;

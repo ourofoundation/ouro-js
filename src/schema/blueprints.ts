@@ -38,15 +38,7 @@ const UpdateBlueprintSchema = z.object({
   last_updated: z.string().default(() => new Date().toISOString()),
 });
 
-type Blueprint = z.infer<typeof BlueprintSchema>;
-type CreateBlueprint = z.infer<typeof CreateBlueprintSchema>;
-type UpdateBlueprint = z.infer<typeof UpdateBlueprintSchema>;
-
-export {
-  BlueprintSchema,
-  CreateBlueprintSchema,
-  UpdateBlueprintSchema,
-  type Blueprint,
-  type CreateBlueprint,
-  type UpdateBlueprint,
-};
+export { BlueprintSchema, CreateBlueprintSchema, UpdateBlueprintSchema };
+export type Blueprint = z.infer<typeof BlueprintSchema>;
+export type CreateBlueprint = z.infer<typeof CreateBlueprintSchema>;
+export type UpdateBlueprint = z.infer<typeof UpdateBlueprintSchema>;

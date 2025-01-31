@@ -52,18 +52,15 @@ const updateDatasetSchema = DatasetSchema.partial()
     last_updated: z.string().default(() => new Date().toISOString()),
   });
 
-type Dataset = z.infer<typeof DatasetSchema>;
-type CreateFromFileDataset = z.infer<typeof CreateDatasetFromFileSchema>;
-type CreateFromSchemaDataset = z.infer<typeof CreateDatasetFromSchemaSchema>;
-type UpdateDataset = z.infer<typeof updateDatasetSchema>;
-
 export {
   DatasetSchema,
   CreateDatasetFromFileSchema,
   CreateDatasetFromSchemaSchema,
   updateDatasetSchema,
-  type Dataset,
-  type CreateFromFileDataset,
-  type CreateFromSchemaDataset,
-  type UpdateDataset,
 };
+export type Dataset = z.infer<typeof DatasetSchema>;
+export type CreateFromFileDataset = z.infer<typeof CreateDatasetFromFileSchema>;
+export type CreateFromSchemaDataset = z.infer<
+  typeof CreateDatasetFromSchemaSchema
+>;
+export type UpdateDataset = z.infer<typeof updateDatasetSchema>;

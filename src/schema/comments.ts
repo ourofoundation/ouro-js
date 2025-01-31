@@ -29,6 +29,5 @@ const CreateCommentSchema = CommentSchema.partial()
   });
 
 export { CommentSchema, CreateCommentSchema };
-
 export type Comment = z.infer<typeof CommentSchema>;
 export type CreateComment = z.infer<typeof CreateCommentSchema>;

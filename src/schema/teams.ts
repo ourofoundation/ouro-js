@@ -62,21 +62,15 @@ const UpdateTeamSchema = TeamSchema.partial()
     id: z.string().uuid(),
   });
 
-type Team = z.infer<typeof TeamSchema>;
-type CreateTeam = z.infer<typeof CreateTeamSchema>;
-type ReadTeam = z.infer<typeof ReadTeamSchema>;
-type ReadTeams = z.infer<typeof ReadTeamsSchema>;
-type UpdateTeam = z.infer<typeof UpdateTeamSchema>;
-
 export {
   TeamSchema,
   CreateTeamSchema,
   ReadTeamSchema,
   ReadTeamsSchema,
   UpdateTeamSchema,
-  type Team,
-  type CreateTeam,
-  type ReadTeam,
-  type ReadTeams,
-  type UpdateTeam,
 };
+export type Team = z.infer<typeof TeamSchema>;
+export type CreateTeam = z.infer<typeof CreateTeamSchema>;
+export type ReadTeam = z.infer<typeof ReadTeamSchema>;
+export type ReadTeams = z.infer<typeof ReadTeamsSchema>;
+export type UpdateTeam = z.infer<typeof UpdateTeamSchema>;
