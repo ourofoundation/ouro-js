@@ -13,6 +13,7 @@ const ProfileSchema = z.object({
       })
     )
     .optional(),
+  post_id: z.string().uuid().optional().nullable(),
   last_active: z.string(),
 });
 
