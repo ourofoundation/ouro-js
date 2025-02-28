@@ -72,8 +72,8 @@ const assetComponentExtension = {
     }
     const componentHtml = `
         <asset-component ${Object.entries(properties)
-          .map(([key, value]) => `${key}="${value}"`)
-          .join(" ")}></asset-component>`;
+        .map(([key, value]) => `${key}="${value}"`)
+        .join(" ")}></asset-component>`;
 
     return componentHtml;
   },

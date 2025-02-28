@@ -1,4 +1,5 @@
 import { Content } from "../../schema/posts";
+import { Profile } from "../../schema/users";
 
 interface InlineAssetAttrs {
   id: string;
@@ -18,21 +19,22 @@ const extractContent = (item: any): any => {
 };
 
 function getReferencesInContent(json: Content["json"]) {
-  if (!json) return { users: [], assets: [] };
+  if (!json || !json?.content) return { users: [], assets: [] };
 
   const content = json.content.map(extractContent).flat();
+  // TODO: should keep the structure instead of flattening to list of strings
   const users = content
     .filter((item: any) => item.type === "mention")
     .map((item: any) => ({
       user_id: item.attrs.id,
-      username: item.attrs.label,
+      username: item.attrs.label || item.attrs.username,
     }))
     .reduce((unique: any[], item: any) => {
-      if (!unique.some((u) => u === item.user_id)) {
-        unique.push(item.user_id);
+      if (!unique.some((u) => u.user_id === item.user_id)) {
+        unique.push(item);
       }
       return unique;
-    }, []) as string[];
+    }, []) as Partial<Profile>[];
 
   const assets = content
     // Filter out assets that still have partial data, must have id
