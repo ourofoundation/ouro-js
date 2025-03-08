@@ -40,6 +40,8 @@ const UpdateConversationSchema = CreateConversationSchema.omit({
   team_id: true,
   team: true,
   user: true,
+  organization: true,
+  slug: true,
 }).partial();
 
 const MessageSchema = z.object({

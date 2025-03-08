@@ -77,6 +77,11 @@ const UpdatePostSchema = PostSchema.partial()
     id: true,
     created_at: true,
     last_updated: true,
+    content: true,
+    organization: true,
+    user: true,
+    team: true,
+    slug: true,
   })
   .extend({
     last_updated: z.string().default(() => new Date().toISOString()),

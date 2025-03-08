@@ -42,6 +42,10 @@ const updateFileSchema = FileSchema.partial()
     id: true,
     created_at: true,
     last_updated: true,
+    organization: true,
+    user: true,
+    team: true,
+    slug: true,
   })
   .extend({
     last_updated: z.string().default(() => new Date().toISOString()),

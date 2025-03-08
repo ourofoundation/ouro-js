@@ -46,6 +46,10 @@ const updateDatasetSchema = DatasetSchema.partial()
     id: true,
     created_at: true,
     last_updated: true,
+    organization: true,
+    user: true,
+    team: true,
+    slug: true,
   })
   .extend({
     asset_type: z.literal("dataset").default("dataset"),
