@@ -1,6 +1,6 @@
 {
   "name": "@ourofoundation/ouro-js",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Interact with the Ouro platform in browser and node.js environments",
   "module": "./dist/index.esm.js",
   "main": "./dist/index.js",
