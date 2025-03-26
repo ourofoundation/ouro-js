@@ -20,14 +20,13 @@ const extractContent = (item: any): any => {
 
 function getReferencesInContent(json: Content["json"]) {
   if (!json || !json?.content) return { users: [], assets: [] };
-
   const content = json.content.map(extractContent).flat();
   // TODO: should keep the structure instead of flattening to list of strings
   const users = content
     .filter((item: any) => item.type === "mention")
     .map((item: any) => ({
-      user_id: item.attrs.id,
-      username: item.attrs.label || item.attrs.username,
+      user_id: item.attrs?.id,
+      username: item.attrs?.label || item.attrs?.username,
     }))
     .reduce((unique: any[], item: any) => {
       if (!unique.some((u) => u.user_id === item.user_id)) {

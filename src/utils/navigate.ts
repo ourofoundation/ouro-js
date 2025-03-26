@@ -50,7 +50,7 @@ const getAssetUrl = (
     filters?: { column: string; value: string; operator: string }[];
   }
 ) => {
-  const assetType = asset?.asset_type || asset?.assetType;
+  // const assetType = asset?.asset_type || asset?.assetType;
   const slug = asset?.slug || createUrlSlug(asset);
   const pathPostfix = config?.intent ? `?intent=${config.intent}` : "";
   let url = `${slug}${pathPostfix}`;

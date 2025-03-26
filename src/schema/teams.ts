@@ -9,10 +9,23 @@ import { ProfileSchema } from "./users";
 const TeamSchema = z.object({
   id: z.string().uuid(),
   org_id: z.string().uuid(),
+  organization: OrganizationsSchema,
   name: z.string(),
   description: z.string().nullable().optional(),
   default_role: RoleSchema,
   visibility: VisibilitySchema,
+  userMembership: z.object({
+    user_id: z.string().uuid(),
+    role: RoleSchema,
+  }).optional().nullable(),
+  memberCount: z.number().optional().nullable(),
+  members: z.array(
+    z.object({
+      user_id: z.string().uuid(),
+      role: RoleSchema,
+      user: ProfileSchema.partial().optional().nullable(),
+    })
+  ),
   created_at: z.string(),
 });
 
@@ -25,6 +38,12 @@ const CreateTeamSchema = TeamSchema.extend({
     (v) => v === "public" || v === "organization"
   ),
   created_at: z.string().default(() => new Date().toISOString()),
+}).omit({
+  organization: true,
+  userMembership: true,
+  memberCount: true,
+  members: true,
+  created_at: true,
 });
 
 const ReadTeamSchema = TeamSchema.extend({
@@ -56,6 +75,7 @@ const ReadTeamsSchema = z.array(
 const UpdateTeamSchema = TeamSchema.partial()
   .omit({
     org_id: true,
+    organization: true,
     created_at: true,
   })
   .extend({

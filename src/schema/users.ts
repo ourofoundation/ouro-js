@@ -14,6 +14,8 @@ const ProfileSchema = z.object({
     )
     .optional(),
   post_id: z.string().uuid().optional().nullable(),
+  is_agent: z.boolean(),
+  plan_type: z.enum(["free", "gold"]),
   last_active: z.string(),
 });
 

@@ -8,12 +8,14 @@ import {
 } from "./common";
 import { AssetSchema } from "./assets";
 import { TipTapSchema } from "./posts";
+import { ProfileSchema } from "./users";
 
 const ConversationSchema = AssetSchema.extend({
   metadata: z.object({
     members: z.array(z.string()),
   }),
   asset_type: AssetTypeSchema.default("conversation"),
+  users: z.array(ProfileSchema).optional().nullable(),
 });
 
 const CreateConversationSchema = ConversationSchema.omit({
@@ -48,6 +50,7 @@ const MessageSchema = z.object({
   id: z.string().uuid(),
   conversation_id: z.string().uuid(),
   user_id: z.string().uuid(),
+  user: ProfileSchema.optional().nullable(),
   created_at: z.string().datetime(),
   last_updated: z.string().datetime(),
   viewers: z.array(z.string().uuid()),
