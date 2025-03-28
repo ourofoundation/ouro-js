@@ -1,43 +1,54 @@
 import { uuidv7 } from "uuidv7";
-import { z } from "zod";
+import {
+  object,
+  string,
+  number,
+  array,
+  type z,
+  optional,
+  nullable
+} from "zod";
 
 import { RoleSchema, VisibilitySchema } from "./common";
-
 import { OrganizationsSchema } from "./organizations";
 import { ProfileSchema } from "./users";
 
-const TeamSchema = z.object({
-  id: z.string().uuid(),
-  org_id: z.string().uuid(),
+const TeamSchema = object({
+  id: string().uuid(),
+  org_id: string().uuid(),
   organization: OrganizationsSchema,
-  name: z.string(),
-  description: z.string().nullable().optional(),
+  name: string(),
+  description: optional(nullable(string())),
   default_role: RoleSchema,
   visibility: VisibilitySchema,
-  userMembership: z.object({
-    user_id: z.string().uuid(),
-    role: RoleSchema,
-  }).optional().nullable(),
-  memberCount: z.number().optional().nullable(),
-  members: z.array(
-    z.object({
-      user_id: z.string().uuid(),
+  userMembership: optional(
+    nullable(
+      object({
+        user_id: string().uuid(),
+        role: RoleSchema,
+      })
+    )
+  ),
+  memberCount: optional(nullable(number())),
+  members: array(
+    object({
+      user_id: string().uuid(),
       role: RoleSchema,
-      user: ProfileSchema.partial().optional().nullable(),
+      user: optional(nullable(ProfileSchema.partial())),
     })
   ),
-  created_at: z.string(),
+  created_at: string(),
 });
 
 const CreateTeamSchema = TeamSchema.extend({
-  id: z.string().default(() => uuidv7()),
+  id: string().default(() => uuidv7()),
   default_role: RoleSchema.default("write").refine(
     (v) => v === "read" || v === "write"
   ),
   visibility: VisibilitySchema.default("public").refine(
     (v) => v === "public" || v === "organization"
   ),
-  created_at: z.string().default(() => new Date().toISOString()),
+  created_at: string().default(() => new Date().toISOString()),
 }).omit({
   organization: true,
   userMembership: true,
@@ -47,28 +58,29 @@ const CreateTeamSchema = TeamSchema.extend({
 });
 
 const ReadTeamSchema = TeamSchema.extend({
-  userMembership: z
-    .object({
-      user_id: z.string().uuid(),
+  userMembership: optional(
+    nullable(
+      object({
+        user_id: string().uuid(),
+        role: RoleSchema,
+      })
+    )
+  ),
+  memberCount: number(),
+  members: array(
+    object({
+      user_id: string().uuid(),
       role: RoleSchema,
-    })
-    .optional()
-    .nullable(),
-  memberCount: z.number(),
-  members: z.array(
-    z.object({
-      user_id: z.string().uuid(),
-      role: RoleSchema,
-      user: ProfileSchema.partial().optional().nullable(),
+      user: optional(nullable(ProfileSchema.partial())),
     })
   ),
-  organization: OrganizationsSchema.partial().optional().nullable(),
+  organization: optional(nullable(OrganizationsSchema.partial())),
 });
 
-const ReadTeamsSchema = z.array(
+const ReadTeamsSchema = array(
   ReadTeamSchema.extend({
-    label: z.string(),
-    value: z.string(),
+    label: string(),
+    value: string(),
   })
 );
 
@@ -79,7 +91,7 @@ const UpdateTeamSchema = TeamSchema.partial()
     created_at: true,
   })
   .extend({
-    id: z.string().uuid(),
+    id: string().uuid(),
   });
 
 export {

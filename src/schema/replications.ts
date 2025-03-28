@@ -1,44 +1,49 @@
 import { uuidv7 } from "uuidv7";
-import { z } from "zod";
+import {
+  object,
+  string,
+  type z,
+  record,
+  any,
+  optional,
+  nullable
+} from "zod";
 
 import { AssetSchema } from "./assets";
 import { AssetTypeSchema, VisibilitySchema } from "./common";
 
 const ReplicationSchema = AssetSchema.extend({
   asset_type: AssetTypeSchema.refine((val) => val === "replication"),
-  metadata: z
-    .object({
-      schedule: z
-        .object({
-          cron: z.string(),
-        })
-        .passthrough()
-        .optional(),
-    })
-    .passthrough(),
+  metadata: object({
+    schedule: optional(
+      object({
+        cron: string(),
+      }).passthrough()
+    ),
+  }).passthrough(),
 });
 
 const CreateReplicationSchema = ReplicationSchema.partial().extend({
-  id: z
-    .string()
+  id: string()
     .uuid()
     .default(() => uuidv7()),
-  team_id: z.string().uuid().default("00000000-0000-0000-0000-000000000000"),
-  org_id: z.string().uuid().default("00000000-0000-0000-0000-000000000000"),
-  name_url_slug: z.string(),
+  team_id: string().uuid().default("00000000-0000-0000-0000-000000000000"),
+  org_id: string().uuid().default("00000000-0000-0000-0000-000000000000"),
+  name_url_slug: string(),
 });
 
-const UpdateReplicationSchema = z.object({
-  team_id: z.string().uuid().nullable().optional(),
-  name_url_slug: z.string().nullable().optional(),
-  name: z.string().nullable().optional(),
-  description: z.string().nullable().optional(),
-  visibility: VisibilitySchema.nullable().optional(),
-  metadata: z.object({}).passthrough().optional().nullable(),
-  last_updated: z.string().default(() => new Date().toISOString()),
+const UpdateReplicationSchema = object({
+  team_id: optional(nullable(string().uuid())),
+  name_url_slug: optional(nullable(string())),
+  name: optional(nullable(string())),
+  description: optional(nullable(string())),
+  visibility: optional(nullable(VisibilitySchema)),
+  metadata: optional(nullable(record(string(), any()))),
+  last_updated: string().default(() => new Date().toISOString()),
 });
 
 export { ReplicationSchema, CreateReplicationSchema, UpdateReplicationSchema };
 export type Replication = z.infer<typeof ReplicationSchema>;
 export type CreateReplication = z.infer<typeof CreateReplicationSchema>;
 export type UpdateReplication = z.infer<typeof UpdateReplicationSchema>;
+

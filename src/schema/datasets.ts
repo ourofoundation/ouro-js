@@ -1,43 +1,52 @@
-import { z } from "zod";
+import {
+  object,
+  string,
+  number,
+  array,
+  literal,
+  record,
+  type z,
+  any,
+  enum as zodEnum
+} from "zod";
 
 import { AssetSchema, CreateAssetSchema } from "./assets";
-import { AssetTypeSchema } from "./common";
 
-const DatasetFromFileMetadataSchema = z.object({
-  type: z.string(),
-  size: z.number(),
-  path: z.string(),
-  name: z.string(),
-  id: z.string().uuid(), // storage file object id,
-  bucket: z.enum(["public-files", "files"]),
+const DatasetFromFileMetadataSchema = object({
+  type: string(),
+  size: number(),
+  path: string(),
+  name: string(),
+  id: string().uuid(), // storage file object id,
+  bucket: zodEnum(["public-files", "files"]),
 });
 
-const DatasetMetadataSchema = z.object({
-  table_name: z.string(),
-  schema: z.literal("datasets").default("datasets"),
-  columns: z.array(z.string()),
+const DatasetMetadataSchema = object({
+  table_name: string(),
+  schema: literal("datasets").default("datasets"),
+  columns: array(string()),
 });
 
 const DatasetSchema = AssetSchema.extend({
-  asset_type: z.literal("dataset").default("dataset"),
+  asset_type: literal("dataset").default("dataset"),
   metadata: DatasetMetadataSchema.extend({
     ...DatasetFromFileMetadataSchema.partial().shape,
   }),
-  preview: z.array(z.object({}).passthrough()),
+  preview: array(record(string(), any())),
 });
 
 const CreateDatasetFromFileSchema = CreateAssetSchema.extend({
-  asset_type: z.literal("dataset").default("dataset"),
+  asset_type: literal("dataset").default("dataset"),
   metadata: DatasetMetadataSchema.extend({
     ...DatasetFromFileMetadataSchema.shape,
   }),
-  preview: z.array(z.object({}).passthrough()),
+  preview: array(record(string(), any())),
 });
 
 const CreateDatasetFromSchemaSchema = CreateAssetSchema.extend({
-  asset_type: z.literal("dataset").default("dataset"),
+  asset_type: literal("dataset").default("dataset"),
   metadata: DatasetMetadataSchema,
-  preview: z.array(z.object({}).passthrough()),
+  preview: array(record(string(), any())),
 });
 
 const updateDatasetSchema = DatasetSchema.partial()
@@ -52,8 +61,8 @@ const updateDatasetSchema = DatasetSchema.partial()
     slug: true,
   })
   .extend({
-    asset_type: z.literal("dataset").default("dataset"),
-    last_updated: z.string().default(() => new Date().toISOString()),
+    asset_type: literal("dataset").default("dataset"),
+    last_updated: string().default(() => new Date().toISOString()),
   });
 
 export {
@@ -64,7 +73,5 @@ export {
 };
 export type Dataset = z.infer<typeof DatasetSchema>;
 export type CreateFromFileDataset = z.infer<typeof CreateDatasetFromFileSchema>;
-export type CreateFromSchemaDataset = z.infer<
-  typeof CreateDatasetFromSchemaSchema
->;
+export type CreateFromSchemaDataset = z.infer<typeof CreateDatasetFromSchemaSchema>;
 export type UpdateDataset = z.infer<typeof updateDatasetSchema>;

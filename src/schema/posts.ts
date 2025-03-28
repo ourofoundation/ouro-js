@@ -1,39 +1,51 @@
-import { z } from "zod";
+import {
+  object,
+  string,
+  number,
+  array,
+  lazy,
+  literal,
+  record,
+  type z,
+  any,
+  optional,
+  nullable,
+  boolean,
+  type ZodType
+} from "zod";
 
 import { AssetSchema, CreateAssetSchema } from "./assets";
 import { AssetTypeSchema } from "./common";
 
-const TipTapNode: z.ZodType<any> = z.lazy(() =>
-  z.object({
-    type: z.string(),
-    content: z.array(TipTapNode).optional(),
-    attrs: z.record(z.any()).optional(),
-    marks: z
-      .array(
-        z.object({
-          type: z.string(),
-          attrs: z.record(z.any()).optional(),
+const TipTapNode: ZodType<any> = lazy(() =>
+  object({
+    type: string(),
+    content: optional(array(TipTapNode)),
+    attrs: optional(record(string(), any())),
+    marks: optional(
+      array(
+        object({
+          type: string(),
+          attrs: optional(record(string(), any())),
         })
       )
-      .optional(),
-    text: z.string().optional(), // For text nodes
+    ),
+    text: optional(string()), // For text nodes
   })
 );
 
-const TipTapSchema = z.object({
-  type: z.literal("doc"),
-  content: z.array(TipTapNode),
+const TipTapSchema = object({
+  type: literal("doc"),
+  content: array(TipTapNode),
 });
 
-const ContentSchema = z
-  .object({
-    json: TipTapSchema,
-    text: z.string(),
-  })
-  .default({ json: { type: "doc", content: [] }, text: "" });
+const ContentSchema = object({
+  json: TipTapSchema,
+  text: string(),
+}).default({ json: { type: "doc", content: [] }, text: "" });
 
 const PostSchema = AssetSchema.extend({
-  name: z.string().nullable(),
+  name: nullable(string()),
   asset_type: AssetTypeSchema.refine((x) => ["post", "comment"].includes(x)),
   // TODO: make this ContentSchema
   preview: TipTapSchema.default({ type: "doc", content: [] }),
@@ -41,9 +53,8 @@ const PostSchema = AssetSchema.extend({
 });
 
 const CreatePostSchema = CreateAssetSchema.extend({
-  asset_type: z.literal("post").default("post"),
-  name: z
-    .string()
+  asset_type: literal("post").default("post"),
+  name: string()
     .optional()
     .nullable()
     .default("")
@@ -53,23 +64,25 @@ const CreatePostSchema = CreateAssetSchema.extend({
 });
 
 const ReadPostSchema = PostSchema.extend({
-  content: ContentSchema.optional()
-    .nullable()
-    .default({
-      json: { type: "doc", content: [] },
-      text: "",
-    }),
-  reactions: z.array(z.object({}).passthrough()).default([]),
-  views: z.number().default(0),
-  commentCount: z.number().default(0),
+  content: optional(
+    nullable(
+      ContentSchema.default({
+        json: { type: "doc", content: [] },
+        text: "",
+      })
+    )
+  ),
+  reactions: array(record(string(), any())).default([]),
+  views: number().default(0),
+  commentCount: number().default(0),
   // We have this on asset now
   // parent: ConnectionSchema.optional().nullable(),
-  pinned: z.boolean().default(false),
+  pinned: boolean().default(false),
 });
 
-const ReadPostsSchema = z.array(ReadPostSchema);
+const ReadPostsSchema = array(ReadPostSchema);
 
-const ListPostsSchema = z.array(PostSchema);
+const ListPostsSchema = array(PostSchema);
 
 const UpdatePostSchema = PostSchema.partial()
   .omit({
@@ -84,7 +97,7 @@ const UpdatePostSchema = PostSchema.partial()
     slug: true,
   })
   .extend({
-    last_updated: z.string().default(() => new Date().toISOString()),
+    last_updated: string().default(() => new Date().toISOString()),
   });
 
 export {

@@ -1,5 +1,13 @@
 import { uuidv7 } from "uuidv7";
-import { z } from "zod";
+import {
+  object,
+  string,
+  array,
+  type z,
+  record,
+  any,
+  nullable
+} from "zod";
 
 import { AssetSchema } from "./assets";
 import {
@@ -13,29 +21,26 @@ const BlueprintSchema = AssetSchema.extend({
 });
 
 const CreateBlueprintSchema = AssetSchema.partial().extend({
-  id: z
-    .string()
+  id: string()
     .uuid()
     .default(() => uuidv7()),
-  team_id: z.string().uuid().default("00000000-0000-0000-0000-000000000000"),
-  org_id: z.string().uuid().default("00000000-0000-0000-0000-000000000000"),
-  name_url_slug: z.string(),
-  metadata: z
-    .object({
-      edges: z.array(z.object({}).passthrough()),
-      nodes: z.array(z.object({}).passthrough()),
-    })
-    .passthrough(),
+  team_id: string().uuid().default("00000000-0000-0000-0000-000000000000"),
+  org_id: string().uuid().default("00000000-0000-0000-0000-000000000000"),
+  name_url_slug: string(),
+  metadata: object({
+    edges: array(record(string(), any())),
+    nodes: array(record(string(), any())),
+  }).passthrough(),
 });
 
-const UpdateBlueprintSchema = z.object({
-  team_id: z.string().uuid().nullable().optional(),
-  name_url_slug: z.string().nullable().optional(),
-  name: z.string().nullable().optional(),
-  description: z.string().nullable().optional(),
-  visibility: VisibilitySchema.nullable().optional(),
-  metadata: z.object({}).passthrough().optional().nullable(),
-  last_updated: z.string().default(() => new Date().toISOString()),
+const UpdateBlueprintSchema = object({
+  team_id: nullable(string().uuid()),
+  name_url_slug: nullable(string()),
+  name: nullable(string()),
+  description: nullable(string()),
+  visibility: nullable(VisibilitySchema),
+  metadata: nullable(record(string(), any())),
+  last_updated: string().default(() => new Date().toISOString()),
 });
 
 export { BlueprintSchema, CreateBlueprintSchema, UpdateBlueprintSchema };

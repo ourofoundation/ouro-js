@@ -1,6 +1,17 @@
-import { z } from "zod";
+import {
+  object,
+  string,
+  number,
+  array,
+  enum as zodEnum,
+  type z,
+  any,
+  nullable,
+  optional,
+  record
+} from "zod";
 
-const AssetTypeSchema = z.enum([
+const AssetTypeSchema = zodEnum([
   "user",
   "organization",
   "team",
@@ -15,7 +26,7 @@ const AssetTypeSchema = z.enum([
   "replication",
 ]);
 
-const VisibilitySchema = z.enum([
+const VisibilitySchema = zodEnum([
   "public",
   "private",
   "organization",
@@ -23,24 +34,24 @@ const VisibilitySchema = z.enum([
   "inherit",
 ]);
 
-const RoleSchema = z.enum(["admin", "read", "write", "none"]);
+const RoleSchema = zodEnum(["admin", "read", "write", "none"]);
 
-const MonetizationSchema = z.enum(["none", "pay-to-unlock", "pay-per-use"]);
+const MonetizationSchema = zodEnum(["none", "pay-to-unlock", "pay-per-use"]);
 
-const EmbeddingSchema = z.object({
-  id: z.string(),
-  user_id: z.string(),
-  org_id: z.string().nullable().optional(),
-  embedding: z.array(z.number()),
-  content: z.string(),
+const EmbeddingSchema = object({
+  id: string(),
+  user_id: string(),
+  org_id: optional(nullable(string())),
+  embedding: array(number()),
+  content: string(),
   asset_type: AssetTypeSchema,
-  asset_id: z.string(),
-  metadata: z.object({}).passthrough().nullable().optional(),
-  created_at: z.string(),
-  last_updated: z.string(),
+  asset_id: string(),
+  metadata: optional(nullable(record(string(), any()))),
+  created_at: string(),
+  last_updated: string(),
 });
 
-const ConnectionTypeSchema = z.enum([
+const ConnectionTypeSchema = zodEnum([
   "comment",
   "reference",
   "mention",
@@ -48,40 +59,40 @@ const ConnectionTypeSchema = z.enum([
   "component",
 ]);
 
-const ConnectionSchema = z.object({
-  id: z.string().uuid(),
-  user_id: z.string().uuid(),
+const ConnectionSchema = object({
+  id: string().uuid(),
+  user_id: string().uuid(),
   type: ConnectionTypeSchema,
-  action_id: z.string().uuid().optional().nullable(),
-  source_id: z.string().uuid(),
-  target_id: z.string().uuid(),
+  action_id: optional(nullable(string().uuid())),
+  source_id: string().uuid(),
+  target_id: string().uuid(),
   source_asset_type: AssetTypeSchema,
   target_asset_type: AssetTypeSchema,
-  created_at: z.string(),
-  last_updated: z.string(),
+  created_at: string(),
+  last_updated: string(),
 });
 
-const PurchaseAssetSchema = z.object({
-  assetId: z.string().uuid(),
-  method: z.enum(["checkout", "api"]),
+const PurchaseAssetSchema = object({
+  assetId: string().uuid(),
+  method: zodEnum(["checkout", "api"]),
   assetType: AssetTypeSchema,
 });
 
-const PermissionSchema = z.object({
-  id: z.string().uuid(),
+const PermissionSchema = object({
+  id: string().uuid(),
   role: RoleSchema,
-  user: z.object({
-    user_id: z.string().uuid(),
+  user: object({
+    user_id: string().uuid(),
   }),
-  user_id: z.string().uuid().nullable(),
-  org_id: z.string().uuid().nullable(),
+  user_id: nullable(string().uuid()),
+  org_id: nullable(string().uuid()),
   asset_type: AssetTypeSchema,
-  asset_id: z.string().uuid(),
-  created_at: z.string(),
-  last_updated: z.string(),
+  asset_id: string().uuid(),
+  created_at: string(),
+  last_updated: string(),
 });
 
-const StatusSchema = z.enum(["queued", "in-progress", "success", "error"]);
+const StatusSchema = zodEnum(["queued", "in-progress", "success", "error"]);
 
 export {
   RoleSchema,

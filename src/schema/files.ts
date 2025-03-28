@@ -1,37 +1,46 @@
-import { z } from "zod";
+import {
+  object,
+  string,
+  number,
+  enum as zodEnum,
+  type z,
+  optional,
+  literal,
+  discriminatedUnion
+} from "zod";
 
 import { AssetSchema, CreateAssetSchema } from "./assets";
 
-const FileMetadataSchema = z.object({
-  id: z.string().uuid(), // The id of the file object
-  path: z.string(), // The path of the file in storage
-  bucket: z.enum(["public-files", "files"]),
-  name: z.string(),
-  type: z.string(),
-  size: z.number(),
+const FileMetadataSchema = object({
+  id: string().uuid(), // The id of the file object
+  path: string(), // The path of the file in storage
+  bucket: zodEnum(["public-files", "files"]),
+  name: string(),
+  type: string(),
+  size: number(),
   // If the file is an image, we store width and height
-  width: z.number().optional(),
-  height: z.number().optional(),
+  width: optional(number()),
+  height: optional(number()),
 });
 
 const FileSchema = AssetSchema.extend({
-  asset_type: z.literal("file").default("file"),
+  asset_type: literal("file").default("file"),
   metadata: FileMetadataSchema,
 });
 
-const CreateFileSchema = z.discriminatedUnion("state", [
+const CreateFileSchema = discriminatedUnion("state", [
   // Success state, file is ready
   CreateAssetSchema.extend({
-    asset_type: z.literal("file").default("file"),
-    state: z.literal("success").default("success"),
+    asset_type: literal("file").default("file"),
+    state: literal("success").default("success"),
     metadata: FileMetadataSchema,
   }),
   // In-progress state, file is being processed
   CreateAssetSchema.extend({
-    asset_type: z.literal("file").default("file"),
-    state: z.literal("in-progress").default("in-progress"),
-    metadata: z.object({
-      type: z.string(),
+    asset_type: literal("file").default("file"),
+    state: literal("in-progress").default("in-progress"),
+    metadata: object({
+      type: string(),
     }),
   }),
 ]);
@@ -48,7 +57,7 @@ const updateFileSchema = FileSchema.partial()
     slug: true,
   })
   .extend({
-    last_updated: z.string().default(() => new Date().toISOString()),
+    last_updated: string().default(() => new Date().toISOString()),
   });
 
 export { FileSchema, CreateFileSchema, updateFileSchema };

@@ -1,5 +1,15 @@
 import { uuidv7 } from "uuidv7";
-import { z } from "zod";
+import {
+  object,
+  string,
+  array,
+  type z,
+  record,
+  any,
+  optional,
+  nullable,
+  literal
+} from "zod";
 
 import {
   AssetTypeSchema,
@@ -11,11 +21,11 @@ import { TipTapSchema } from "./posts";
 import { ProfileSchema } from "./users";
 
 const ConversationSchema = AssetSchema.extend({
-  metadata: z.object({
-    members: z.array(z.string()),
+  metadata: object({
+    members: array(string()),
   }),
   asset_type: AssetTypeSchema.default("conversation"),
-  users: z.array(ProfileSchema).optional().nullable(),
+  users: optional(nullable(array(ProfileSchema))),
 });
 
 const CreateConversationSchema = ConversationSchema.omit({
@@ -25,12 +35,11 @@ const CreateConversationSchema = ConversationSchema.omit({
   created_at: true,
   last_updated: true,
 }).extend({
-  id: z
-    .string()
+  id: string()
     .uuid()
     .default(() => uuidv7()),
-  org_id: z.string().uuid().default("00000000-0000-0000-0000-000000000000"),
-  team_id: z.string().uuid().default("00000000-0000-0000-0000-000000000000"),
+  org_id: string().uuid().default("00000000-0000-0000-0000-000000000000"),
+  team_id: string().uuid().default("00000000-0000-0000-0000-000000000000"),
   monetization: MonetizationSchema.default("none"),
   visibility: VisibilitySchema.default("private"),
 });
@@ -46,17 +55,17 @@ const UpdateConversationSchema = CreateConversationSchema.omit({
   slug: true,
 }).partial();
 
-const MessageSchema = z.object({
-  id: z.string().uuid(),
-  conversation_id: z.string().uuid(),
-  user_id: z.string().uuid(),
-  user: ProfileSchema.optional().nullable(),
-  created_at: z.string().datetime(),
-  last_updated: z.string().datetime(),
-  viewers: z.array(z.string().uuid()),
+const MessageSchema = object({
+  id: string().uuid(),
+  conversation_id: string().uuid(),
+  user_id: string().uuid(),
+  user: optional(nullable(ProfileSchema)),
+  created_at: string(),
+  last_updated: string(),
+  viewers: array(string().uuid()),
   json: TipTapSchema,
-  text: z.string(),
-  metadata: z.object({}).passthrough().nullable().optional(),
+  text: string(),
+  metadata: optional(nullable(record(string(), any()))),
 });
 
 export {

@@ -1,41 +1,72 @@
-import { z } from "zod";
+import {
+  object,
+  string,
+  number,
+  array,
+  type z,
+  record,
+  any,
+  enum as zodEnum,
+  optional,
+  nullable,
+  boolean
+} from "zod";
 
 import { VisibilitySchema } from "./common";
+import { AssetSchema } from "./assets";
 
-const authType = z.enum(["Personal Access Token", "None", "OAuth 2.0"]);
+const authType = zodEnum(["Personal Access Token", "None", "OAuth 2.0"]);
 
-const serviceSchema = z.object({
-  id: z.string(),
-  user_id: z.string(),
-  org_id: z.string().nullable().optional(),
-  name: z.string(),
-  description: z.string().nullable().optional(),
+const serviceSchema = object({
+  id: string(),
+  user_id: string(),
+  org_id: optional(nullable(string())),
+  name: string(),
+  description: optional(nullable(string())),
   visibility: VisibilitySchema,
-  version: z.string().nullable().optional(),
+  version: optional(nullable(string())),
   authentication: authType,
-  base_url: z.string(),
-  spec_path: z.string(),
-  created_at: z.string(),
-  last_updated: z.string(),
+  base_url: string(),
+  spec_path: string(),
+  created_at: string(),
+  last_updated: string(),
 });
 
-const routeSchema = z.object({
-  id: z.string(),
-  user_id: z.string(),
-  service_id: z.string(),
-  path: z.string(),
-  method: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
-  summary: z.string().nullable().optional(),
-  parameters: z.array(z.object({}).passthrough()).nullable().optional(),
-  request_body: z.object({}).passthrough().nullable().optional(),
-  responses: z.array(z.object({}).passthrough()).nullable().optional(),
-  security: z.object({}).passthrough().nullable().optional(),
-  // created_at: z.string(),
-  rate_limit: z.number().nullable().optional(),
-  last_updated: z.string(),
+const routeSchema = object({
+  id: string(),
+  user_id: string(),
+  service_id: string(),
+  path: string(),
+  method: zodEnum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
+  summary: optional(nullable(string())),
+  parameters: optional(nullable(array(record(string(), any())))),
+  request_body: optional(nullable(record(string(), any()))),
+  responses: optional(nullable(array(record(string(), any())))),
+  security: optional(nullable(record(string(), any()))),
+  rate_limit: optional(nullable(number())),
+  last_updated: string(),
 });
 
-export { routeSchema, serviceSchema, authType };
+const ActionSchema = object({
+  id: string().uuid(),
+  user_id: string().uuid(),
+  route_id: string().uuid(),
+  metadata: optional(nullable(record(string(), any()))),
+  response: optional(nullable(record(string(), any()))),
+  side_effects: boolean().default(true),
+  input_asset_id: optional(nullable(string().uuid())),
+  output_asset_id: optional(nullable(string().uuid())),
+  input_asset: optional(nullable(AssetSchema)),
+  output_asset: optional(nullable(AssetSchema)),
+  status: zodEnum(["PENDING", "PROCESSING", "COMPLETED", "FAILED"]),
+  created_at: string(),
+  last_updated: string(),
+  started_at: optional(nullable(string())),
+  finished_at: optional(nullable(string())),
+});
+
+export { routeSchema, serviceSchema, authType, ActionSchema };
 export type Service = z.infer<typeof serviceSchema>;
 export type Route = z.infer<typeof routeSchema>;
 export type AuthType = z.infer<typeof authType>;
+export type Action = z.infer<typeof ActionSchema>;

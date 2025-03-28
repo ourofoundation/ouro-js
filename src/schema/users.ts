@@ -1,31 +1,41 @@
-import { z } from "zod";
+import {
+  object,
+  string,
+  number,
+  array,
+  boolean,
+  enum as zodEnum,
+  type z,
+  optional,
+  nullable
+} from "zod";
 
-const ProfileSchema = z.object({
-  id: z.string().uuid(),
-  user_id: z.string().uuid(),
-  username: z.string().optional().nullable(),
-  avatar_path: z.string().optional().nullable(),
-  bio: z.string().optional().nullable(),
-  urls: z
-    .array(
-      z.object({
-        value: z.string().url(),
+const ProfileSchema = object({
+  id: string().uuid(),
+  user_id: string().uuid(),
+  username: optional(nullable(string())),
+  avatar_path: optional(nullable(string())),
+  bio: optional(nullable(string())),
+  urls: optional(
+    array(
+      object({
+        value: string().url(),
       })
     )
-    .optional(),
-  post_id: z.string().uuid().optional().nullable(),
-  is_agent: z.boolean(),
-  plan_type: z.enum(["free", "gold"]),
-  last_active: z.string(),
+  ),
+  post_id: optional(nullable(string().uuid())),
+  is_agent: boolean(),
+  plan_type: zodEnum(["free", "gold"]),
+  last_active: string(),
 });
 
 const ReadProfileSchema = ProfileSchema.extend({
-  is_agent: z.boolean(),
-  isFollowing: z.boolean(),
-  isFollowed: z.boolean(),
-  isSelf: z.boolean(),
-  followers: z.number().default(0),
-  following: z.number().default(0),
+  is_agent: boolean(),
+  isFollowing: boolean(),
+  isFollowed: boolean(),
+  isSelf: boolean(),
+  followers: number().default(0),
+  following: number().default(0),
 });
 
 const UpdateProfileSchema = ProfileSchema.partial().omit({
