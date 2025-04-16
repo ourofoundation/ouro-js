@@ -16,6 +16,7 @@ const DatasetFromFileMetadataSchema = object({
   type: string(),
   size: number(),
   path: string(),
+  extension: string(),
   name: string(),
   id: string().uuid(), // storage file object id,
   bucket: zodEnum(["public-files", "files"]),

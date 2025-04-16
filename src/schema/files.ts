@@ -17,6 +17,7 @@ const FileMetadataSchema = object({
   bucket: zodEnum(["public-files", "files"]),
   name: string(),
   type: string(),
+  extension: string(),
   size: number(),
   // If the file is an image, we store width and height
   width: optional(number()),
