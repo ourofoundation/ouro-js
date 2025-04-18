@@ -12,24 +12,21 @@ import {
   boolean
 } from "zod";
 
-import { VisibilitySchema } from "./common";
+import { AssetTypeSchema } from "./common";
 import { AssetSchema } from "./assets";
 
 const authType = zodEnum(["Personal Access Token", "None", "OAuth 2.0"]);
 
-const serviceSchema = object({
-  id: string(),
-  user_id: string(),
-  org_id: optional(nullable(string())),
-  name: string(),
-  description: optional(nullable(string())),
-  visibility: VisibilitySchema,
-  version: optional(nullable(string())),
+const serviceMetadataSchema = object({
   authentication: authType,
+  version: optional(nullable(string())),
   base_url: string(),
   spec_path: string(),
-  created_at: string(),
-  last_updated: string(),
+})
+
+const serviceSchema = AssetSchema.extend({
+  asset_type: AssetTypeSchema.refine((x) => "service" === x),
+  metadata: serviceMetadataSchema,
 });
 
 const routeSchema = object({
