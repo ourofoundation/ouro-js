@@ -34,6 +34,7 @@ const TeamSchema = object({
     object({
       user_id: string().uuid(),
       role: RoleSchema,
+      added_at: string(),
       user: optional(nullable(ProfileSchema.partial())),
     })
   ),
@@ -71,6 +72,7 @@ const ReadTeamSchema = TeamSchema.extend({
     object({
       user_id: string().uuid(),
       role: RoleSchema,
+      added_at: string(),
       user: optional(nullable(ProfileSchema.partial())),
     })
   ),
