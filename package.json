@@ -24,6 +24,11 @@
   },
   "author": "ourofoundation",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ourofoundation/ouro-js.git",
+    "directory": "src"
+  },
   "devDependencies": {
     "@swc/core": "^1.11.4",
     "tslib": "^2.3.1",
