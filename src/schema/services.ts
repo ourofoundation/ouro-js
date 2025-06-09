@@ -29,7 +29,7 @@ const serviceSchema = AssetSchema.extend({
   metadata: serviceMetadataSchema,
 });
 
-const routeSchema = object({
+const routeDetailSchema = object({
   id: string(),
   user_id: string(),
   service_id: string(),
@@ -48,6 +48,11 @@ const routeSchema = object({
   last_updated: string(),
 });
 
+const routeSchema = AssetSchema.extend({
+  asset_type: AssetTypeSchema.refine((x) => "route" === x),
+  route: routeDetailSchema,
+});
+
 const ActionSchema = object({
   id: string().uuid(),
   user_id: string().uuid(),
@@ -59,7 +64,7 @@ const ActionSchema = object({
   output_asset_id: optional(nullable(string().uuid())),
   input_asset: optional(nullable(AssetSchema)),
   output_asset: optional(nullable(AssetSchema)),
-  status: zodEnum(["PENDING", "PROCESSING", "COMPLETED", "FAILED"]),
+  status: zodEnum(["queued", "in-progress", "success", "error", 'done']),
   created_at: string(),
   last_updated: string(),
   started_at: optional(nullable(string())),
@@ -69,5 +74,6 @@ const ActionSchema = object({
 export { routeSchema, serviceSchema, authType, ActionSchema };
 export type Service = z.infer<typeof serviceSchema>;
 export type Route = z.infer<typeof routeSchema>;
+export type RouteDetail = z.infer<typeof routeDetailSchema>;
 export type AuthType = z.infer<typeof authType>;
 export type Action = z.infer<typeof ActionSchema>;
