@@ -28,8 +28,12 @@ function getReferencesInContent(json: Content["json"]) {
       user_id: item.attrs?.id,
       username: item.attrs?.label || item.attrs?.username,
     }))
+    // User could have user_id or only username, so we need to check both
     .reduce((unique: any[], item: any) => {
-      if (!unique.some((u) => u.user_id === item.user_id)) {
+      if (!unique.some((u) =>
+        (u.user_id && item.user_id && u.user_id === item.user_id) ||
+        (u.username && item.username && u.username === item.username)
+      )) {
         unique.push(item);
       }
       return unique;
