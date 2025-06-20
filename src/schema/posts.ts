@@ -14,7 +14,7 @@ import {
   type ZodType
 } from "zod";
 
-import { AssetSchema, CreateAssetSchema } from "./assets";
+import { AssetMetadataSchema, AssetSchema, CreateAssetSchema } from "./assets";
 import { AssetTypeSchema } from "./common";
 
 const TipTapNode: ZodType<any> = lazy(() =>
@@ -44,12 +44,20 @@ const ContentSchema = object({
   text: string(),
 }).default({ json: { type: "doc", content: [] }, text: "" });
 
+const BasePostMetadataSchema = object({})
+
+const PostMetadataSchema = BasePostMetadataSchema.extend(
+  AssetMetadataSchema.partial().shape
+);
+
 const PostSchema = AssetSchema.extend({
   name: nullable(string()),
   asset_type: AssetTypeSchema.refine((x) => ["post", "comment"].includes(x)),
+  metadata: PostMetadataSchema,
   // TODO: make this ContentSchema
   preview: TipTapSchema.default({ type: "doc", content: [] }),
   content: ContentSchema,
+
 });
 
 const CreatePostSchema = CreateAssetSchema.extend({

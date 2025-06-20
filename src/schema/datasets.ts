@@ -10,7 +10,7 @@ import {
   enum as zodEnum
 } from "zod";
 
-import { AssetSchema, CreateAssetSchema } from "./assets";
+import { AssetSchema, CreateAssetSchema, AssetMetadataSchema } from "./assets";
 
 const DatasetFromFileMetadataSchema = object({
   type: string(),
@@ -22,11 +22,15 @@ const DatasetFromFileMetadataSchema = object({
   bucket: zodEnum(["public-files", "files"]),
 });
 
-const DatasetMetadataSchema = object({
+const BaseDatasetMetadataSchema = object({
   table_name: string(),
   schema: literal("datasets").default("datasets"),
   columns: array(string()),
 });
+
+const DatasetMetadataSchema = BaseDatasetMetadataSchema.extend(
+  AssetMetadataSchema.partial().shape
+);
 
 const DatasetSchema = AssetSchema.extend({
   asset_type: literal("dataset").default("dataset"),

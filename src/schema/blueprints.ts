@@ -9,15 +9,25 @@ import {
   nullable
 } from "zod";
 
-import { AssetSchema } from "./assets";
+import { AssetMetadataSchema, AssetSchema } from "./assets";
 import {
   AssetTypeSchema,
   MonetizationSchema,
   VisibilitySchema,
 } from "./common";
 
+const BaseBlueprintMetadataSchema = object({
+  edges: array(record(string(), any())),
+  nodes: array(record(string(), any())),
+});
+
+const BlueprintMetadataSchema = BaseBlueprintMetadataSchema.extend(
+  AssetMetadataSchema.partial().shape
+);
+
 const BlueprintSchema = AssetSchema.extend({
   asset_type: AssetTypeSchema.refine((val) => val === "blueprint"),
+  metadata: BlueprintMetadataSchema,
 });
 
 const CreateBlueprintSchema = AssetSchema.partial().extend({
@@ -27,10 +37,7 @@ const CreateBlueprintSchema = AssetSchema.partial().extend({
   team_id: string().uuid().default("00000000-0000-0000-0000-000000000000"),
   org_id: string().uuid().default("00000000-0000-0000-0000-000000000000"),
   name_url_slug: string(),
-  metadata: object({
-    edges: array(record(string(), any())),
-    nodes: array(record(string(), any())),
-  }).passthrough(),
+  metadata: BlueprintMetadataSchema.passthrough(),
 });
 
 const UpdateBlueprintSchema = object({

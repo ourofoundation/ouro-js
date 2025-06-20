@@ -13,23 +13,49 @@ import {
 } from "zod";
 
 import { AssetTypeSchema } from "./common";
-import { AssetSchema } from "./assets";
+import { AssetMetadataSchema, AssetSchema, CreateAssetSchema } from "./assets";
 
-const authType = zodEnum(["Personal Access Token", "None", "OAuth 2.0"]);
+const AuthType = zodEnum(["Personal Access Token", "Ouro", "None", "OAuth 2.0"]);
 
-const serviceMetadataSchema = object({
-  authentication: authType,
-  version: optional(nullable(string())),
+const BaseServiceMetadataSchema = object({
+  authentication: AuthType,
   base_url: string(),
-  spec_path: string(),
-})
-
-const serviceSchema = AssetSchema.extend({
-  asset_type: AssetTypeSchema.refine((x) => "service" === x),
-  metadata: serviceMetadataSchema,
+  version: optional(nullable(string())),
+  spec_path: optional(nullable(string())),
+  auth_token: optional(nullable(string())),
+  auth_url: optional(nullable(string())),
 });
 
-const routeDetailSchema = object({
+const ServiceMetadataSchema = BaseServiceMetadataSchema.extend(
+  AssetMetadataSchema.partial().shape
+);
+
+const ServiceSchema = AssetSchema.extend({
+  asset_type: AssetTypeSchema.refine((x) => "service" === x),
+  metadata: ServiceMetadataSchema,
+});
+
+const CreateServiceSchema = CreateAssetSchema.extend({
+  asset_type: AssetTypeSchema.refine((x) => "service" === x),
+  metadata: ServiceMetadataSchema,
+});
+
+const UpdateServiceSchema = ServiceSchema.partial()
+  .omit({
+    user_id: true,
+    id: true,
+    created_at: true,
+    last_updated: true,
+    organization: true,
+    user: true,
+    team: true,
+    slug: true,
+  })
+  .extend({
+    last_updated: string().default(() => new Date().toISOString()),
+  });
+
+const RouteDetailSchema = object({
   id: string(),
   user_id: string(),
   service_id: string(),
@@ -48,9 +74,9 @@ const routeDetailSchema = object({
   last_updated: string(),
 });
 
-const routeSchema = AssetSchema.extend({
+const RouteSchema = AssetSchema.extend({
   asset_type: AssetTypeSchema.refine((x) => "route" === x),
-  route: routeDetailSchema,
+  route: RouteDetailSchema,
 });
 
 const ActionSchema = object({
@@ -71,9 +97,9 @@ const ActionSchema = object({
   finished_at: optional(nullable(string())),
 });
 
-export { routeSchema, serviceSchema, authType, ActionSchema };
-export type Service = z.infer<typeof serviceSchema>;
-export type Route = z.infer<typeof routeSchema>;
-export type RouteDetail = z.infer<typeof routeDetailSchema>;
-export type AuthType = z.infer<typeof authType>;
+export { RouteSchema, ServiceSchema, CreateServiceSchema, UpdateServiceSchema, AuthType, ActionSchema };
+export type Service = z.infer<typeof ServiceSchema>;
+export type Route = z.infer<typeof RouteSchema>;
+export type RouteDetail = z.infer<typeof RouteDetailSchema>;
+export type AuthType = z.infer<typeof AuthType>;
 export type Action = z.infer<typeof ActionSchema>;

@@ -16,15 +16,21 @@ import {
   MonetizationSchema,
   VisibilitySchema,
 } from "./common";
-import { AssetSchema } from "./assets";
+import { AssetMetadataSchema, AssetSchema } from "./assets";
 import { TipTapSchema } from "./posts";
 import { ProfileSchema } from "./users";
 
+const BaseConversationMetadataSchema = object({
+  members: array(string()),
+});
+
+const ConversationMetadataSchema = BaseConversationMetadataSchema.extend(
+  AssetMetadataSchema.partial().shape
+);
+
 const ConversationSchema = AssetSchema.extend({
-  metadata: object({
-    members: array(string()),
-  }),
   asset_type: AssetTypeSchema.default("conversation"),
+  metadata: ConversationMetadataSchema,
   users: optional(nullable(array(ProfileSchema))),
 });
 

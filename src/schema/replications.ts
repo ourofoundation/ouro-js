@@ -9,18 +9,24 @@ import {
   nullable
 } from "zod";
 
-import { AssetSchema } from "./assets";
+import { AssetMetadataSchema, AssetSchema } from "./assets";
 import { AssetTypeSchema, VisibilitySchema } from "./common";
+
+const BaseReplicationMetadataSchema = object({
+  schedule: optional(
+    object({
+      cron: string(),
+    }).passthrough()
+  ),
+});
+
+const ReplicationMetadataSchema = BaseReplicationMetadataSchema.extend(
+  AssetMetadataSchema.partial().shape
+);
 
 const ReplicationSchema = AssetSchema.extend({
   asset_type: AssetTypeSchema.refine((val) => val === "replication"),
-  metadata: object({
-    schedule: optional(
-      object({
-        cron: string(),
-      }).passthrough()
-    ),
-  }).passthrough(),
+  metadata: ReplicationMetadataSchema,
 });
 
 const CreateReplicationSchema = ReplicationSchema.partial().extend({

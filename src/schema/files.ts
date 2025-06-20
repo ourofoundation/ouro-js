@@ -25,7 +25,15 @@ const BaseFileMetadataSchema = object({
   height: optional(number()),
 });
 
+const BaseStubFileMetadataSchema = object({
+  type: string(),
+});
+
 const FileMetadataSchema = BaseFileMetadataSchema.extend(
+  AssetMetadataSchema.partial().shape
+);
+
+const StubFileMetadataSchema = BaseStubFileMetadataSchema.extend(
   AssetMetadataSchema.partial().shape
 );
 
@@ -45,9 +53,7 @@ const CreateFileSchema = discriminatedUnion("state", [
   CreateAssetSchema.extend({
     asset_type: literal("file").default("file"),
     state: literal("in-progress").default("in-progress"),
-    metadata: object({
-      type: string(),
-    }),
+    metadata: StubFileMetadataSchema,
   }),
 ]);
 
