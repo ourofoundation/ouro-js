@@ -6,12 +6,13 @@ import {
   type z,
   optional,
   literal,
-  discriminatedUnion
+  discriminatedUnion,
+  nullable
 } from "zod";
 
-import { AssetSchema, CreateAssetSchema } from "./assets";
+import { AssetSchema, CreateAssetSchema, AssetMetadataSchema } from "./assets";
 
-const FileMetadataSchema = object({
+const BaseFileMetadataSchema = object({
   id: string().uuid(), // The id of the file object
   path: string(), // The path of the file in storage
   bucket: zodEnum(["public-files", "files"]),
@@ -23,6 +24,10 @@ const FileMetadataSchema = object({
   width: optional(number()),
   height: optional(number()),
 });
+
+const FileMetadataSchema = BaseFileMetadataSchema.extend(
+  AssetMetadataSchema.partial().shape
+);
 
 const FileSchema = AssetSchema.extend({
   asset_type: literal("file").default("file"),

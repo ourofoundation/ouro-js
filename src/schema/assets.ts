@@ -22,6 +22,13 @@ import { TeamSchema } from "./teams";
 import { ProfileSchema } from "./users";
 import { uuidv7 } from "uuidv7";
 
+const AssetMetadataSchema = object({
+  doi_url: optional(nullable(string())),
+  external_url: optional(nullable(string())),
+  originality: zodEnum(["original", "derivative", "third-party"]),
+  source: optional(nullable(string())),
+})
+
 const AssetSchema = object({
   id: string().uuid(),
   user_id: string().uuid(),
@@ -32,6 +39,8 @@ const AssetSchema = object({
   team: optional(TeamSchema.partial()),
   parent_id: optional(nullable(string().uuid())),
   parent: optional(record(string(), any())),
+  license_id: string(),
+  license: optional(record(string(), any())),
   asset_type: AssetTypeSchema,
   name: string(),
   name_url_slug: optional(nullable(string())),
@@ -43,11 +52,9 @@ const AssetSchema = object({
   unit_cost: optional(nullable(number())),
   cost_accounting: optional(nullable(zodEnum(["fixed", "variable"]))),
   cost_unit: optional(nullable(string())),
-  product_id: optional(nullable(string())),
-  price_id: optional(nullable(string())),
-  metadata: optional(nullable(record(string(), any()))),
+  metadata: optional(nullable(AssetMetadataSchema)),
   preview: optional(nullable(array(record(string(), any())))),
-  state: optional(nullable(StatusSchema)),
+  state: StatusSchema,
   created_at: string(),
   last_updated: string(),
 });
@@ -57,6 +64,7 @@ const CreateAssetSchema = AssetSchema.partial()
     user_id: true,
     user: true,
     organization: true,
+    license: true,
     team: true,
     slug: true,
   })
@@ -86,7 +94,8 @@ const UpdateAssetSchema = AssetSchema.partial().omit({
   slug: true,
 });
 
-export { AssetSchema, CreateAssetSchema, UpdateAssetSchema };
+export { AssetMetadataSchema, AssetSchema, CreateAssetSchema, UpdateAssetSchema };
+export type AssetMetadata = z.infer<typeof AssetMetadataSchema>;
 export type Asset = z.infer<typeof AssetSchema>;
 export type CreateAsset = z.infer<typeof CreateAssetSchema>;
 export type UpdateAsset = z.infer<typeof UpdateAssetSchema>;
