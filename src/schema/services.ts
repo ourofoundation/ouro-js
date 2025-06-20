@@ -97,7 +97,7 @@ const ActionSchema = object({
   finished_at: optional(nullable(string())),
 });
 
-export { RouteSchema, ServiceSchema, CreateServiceSchema, UpdateServiceSchema, AuthType, ActionSchema };
+export { RouteSchema, ServiceSchema, CreateServiceSchema, UpdateServiceSchema, ActionSchema };
 export type Service = z.infer<typeof ServiceSchema>;
 export type Route = z.infer<typeof RouteSchema>;
 export type RouteDetail = z.infer<typeof RouteDetailSchema>;
