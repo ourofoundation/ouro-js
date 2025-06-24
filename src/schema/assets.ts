@@ -25,6 +25,8 @@ import { uuidv7 } from "uuidv7";
 const AssetMetadataSchema = object({
   doi_url: optional(nullable(string())),
   external_url: optional(nullable(string())),
+  paper_url: optional(nullable(string())),
+  github_url: optional(nullable(string())),
   originality: zodEnum(["original", "derivative", "third-party"]),
   source: optional(nullable(string())),
 })
