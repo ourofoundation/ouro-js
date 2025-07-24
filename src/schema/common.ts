@@ -94,6 +94,8 @@ const PermissionSchema = object({
 
 const StatusSchema = zodEnum(["queued", "in-progress", "success", "error"]);
 
+const SourceSchema = zodEnum(["web", "api"]);
+
 export {
   RoleSchema,
   VisibilitySchema,
@@ -104,6 +106,7 @@ export {
   PurchaseAssetSchema,
   PermissionSchema,
   StatusSchema,
+  SourceSchema,
 };
 
 export type Role = z.infer<typeof RoleSchema>;
@@ -115,3 +118,4 @@ export type AssetTypes = z.infer<typeof AssetTypeSchema>;
 export type PurchaseAsset = z.infer<typeof PurchaseAssetSchema>;
 export type Permission = z.infer<typeof PermissionSchema>;
 export type Status = z.infer<typeof StatusSchema>;
+export type Source = z.infer<typeof SourceSchema>;

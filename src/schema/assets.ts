@@ -15,6 +15,7 @@ import {
   AssetTypeSchema,
   MonetizationSchema,
   StatusSchema,
+  SourceSchema,
   VisibilitySchema,
 } from "./common";
 import { OrganizationsSchema } from "./organizations";
@@ -57,6 +58,7 @@ const AssetSchema = object({
   metadata: optional(nullable(AssetMetadataSchema)),
   preview: optional(nullable(array(record(string(), any())))),
   state: StatusSchema,
+  source: SourceSchema,
   created_at: string(),
   last_updated: string(),
 });
