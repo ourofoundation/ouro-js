@@ -83,6 +83,7 @@ const CreateAssetSchema = AssetSchema.partial()
       .max(255, { message: "Name must be less than 255 characters" }),
     name_url_slug: optional(nullable(string())),
     state: StatusSchema.optional().default("success"),
+    source: SourceSchema.default("web"),
     visibility: VisibilitySchema.optional().default("public"),
     created_at: string().default(() => new Date().toISOString()),
     last_updated: string().default(() => new Date().toISOString()),

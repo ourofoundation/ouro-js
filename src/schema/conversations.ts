@@ -16,7 +16,7 @@ import {
   MonetizationSchema,
   VisibilitySchema,
 } from "./common";
-import { AssetMetadataSchema, AssetSchema } from "./assets";
+import { AssetMetadataSchema, AssetSchema, CreateAssetSchema } from "./assets";
 import { TipTapSchema } from "./posts";
 import { ProfileSchema } from "./users";
 
@@ -34,20 +34,11 @@ const ConversationSchema = AssetSchema.extend({
   users: optional(nullable(array(ProfileSchema))),
 });
 
-const CreateConversationSchema = ConversationSchema.omit({
-  org_id: true,
-  team_id: true,
-  user_id: true,
-  created_at: true,
-  last_updated: true,
-}).extend({
-  id: string()
-    .uuid()
-    .default(() => uuidv7()),
-  org_id: string().uuid().default("00000000-0000-0000-0000-000000000000"),
-  team_id: string().uuid().default("00000000-0000-0000-0000-000000000000"),
+const CreateConversationSchema = CreateAssetSchema.extend({
+  asset_type: literal("conversation").default("conversation"),
   monetization: MonetizationSchema.default("none"),
   visibility: VisibilitySchema.default("private"),
+  metadata: ConversationMetadataSchema,
 });
 
 // Partial because we can make updates to conversations without providing all fields
