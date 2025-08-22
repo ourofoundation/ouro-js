@@ -48,7 +48,15 @@ const AssetSchema = object({
   name: string(),
   name_url_slug: optional(nullable(string())),
   slug: optional(nullable(string())),
-  description: optional(nullable(string())),
+  // Rich description: store both editor json and plain text
+  description: optional(
+    nullable(
+      object({
+        json: record(string(), any()),
+        text: string(),
+      })
+    )
+  ),
   visibility: VisibilitySchema,
   monetization: MonetizationSchema,
   price: optional(nullable(number())),

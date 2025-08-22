@@ -20,6 +20,7 @@ const AssetTypeSchema = zodEnum([
   "service",
   "route",
   "post",
+  "quest",
   "comment",
   "conversation",
   "blueprint",

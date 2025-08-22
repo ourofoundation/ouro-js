@@ -6,7 +6,9 @@ import {
   array,
   type z,
   optional,
-  nullable
+  nullable,
+  any,
+  record
 } from "zod";
 
 import { RoleSchema, VisibilitySchema } from "./common";
@@ -18,7 +20,14 @@ const TeamSchema = object({
   org_id: string().uuid(),
   organization: OrganizationsSchema,
   name: string(),
-  description: optional(nullable(string())),
+  description: optional(
+    nullable(
+      object({
+        text: string(),
+        json: record(string(), any()),
+      })
+    )
+  ),
   default_role: RoleSchema,
   visibility: VisibilitySchema,
   userMembership: optional(

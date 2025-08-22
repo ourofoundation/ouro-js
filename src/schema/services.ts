@@ -69,6 +69,7 @@ const RouteDetailSchema = object({
   input_filter: optional(nullable(zodEnum(["audio", "video", "image", "pdf", "3d model", "atomic structure"]))),
   input_file_extension: optional(nullable(string())),
   output_type: optional(nullable(zodEnum(["file", "dataset", "post"]))),
+  output_file_extension: optional(nullable(string())),
   security: optional(nullable(record(string(), any()))),
   rate_limit: optional(nullable(number())),
   last_updated: string(),
