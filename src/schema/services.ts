@@ -22,6 +22,7 @@ const BaseServiceMetadataSchema = object({
   base_url: string(),
   version: optional(nullable(string())),
   spec_path: optional(nullable(string())),
+  spec_url: optional(nullable(string())),
   auth_token: optional(nullable(string())),
   auth_url: optional(nullable(string())),
 });
