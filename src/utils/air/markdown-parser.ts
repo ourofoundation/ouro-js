@@ -72,7 +72,15 @@ const assetComponentExtension = {
     }
     const componentHtml = `
         <asset-component ${Object.entries(properties)
-        .map(([key, value]) => `${key}="${value}"`)
+        .map(([key, value]) => {
+          // Stringify arrays and objects, keep primitives as-is
+          const stringValue = typeof value === 'object' && value !== null
+            ? JSON.stringify(value)
+            : String(value);
+          // Escape quotes for HTML attributes
+          const escapedValue = stringValue.replace(/"/g, '&quot;');
+          return `${key}="${escapedValue}"`;
+        })
         .join(" ")}></asset-component>`;
 
     return componentHtml;

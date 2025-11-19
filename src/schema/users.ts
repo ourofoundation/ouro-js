@@ -36,6 +36,8 @@ const ReadProfileSchema = ProfileSchema.extend({
   isSelf: boolean(),
   followers: number().default(0),
   following: number().default(0),
+  totalXp: number().default(0),
+  level: number().default(1),
 });
 
 const UpdateProfileSchema = ProfileSchema.partial().omit({

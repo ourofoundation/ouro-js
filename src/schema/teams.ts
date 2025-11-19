@@ -14,6 +14,7 @@ import {
 import { RoleSchema, VisibilitySchema } from "./common";
 import { OrganizationsSchema } from "./organizations";
 import { ProfileSchema } from "./users";
+import { record as zodRecord } from "zod";
 
 const TeamSchema = object({
   id: string().uuid(),
@@ -86,6 +87,13 @@ const ReadTeamSchema = TeamSchema.extend({
     })
   ),
   organization: optional(nullable(OrganizationsSchema.partial())),
+  // Enriched fields used for rendering embedded references in description
+  assets: optional(
+    nullable(array(zodRecord(string(), any())))
+  ),
+  users: optional(
+    nullable(array(ProfileSchema.partial()))
+  ),
 });
 
 const ReadTeamsSchema = array(

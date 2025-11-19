@@ -4,7 +4,8 @@ import {
   boolean,
   type z,
   enum as zodEnum,
-  optional
+  optional,
+  uuid
 } from "zod";
 
 import { AssetTypeSchema } from "./common";
@@ -20,15 +21,24 @@ const NotificationTypeSchema = zodEnum([
   "payment",
   "event",
   "share",
+  "badge",
+  "reaction",
+  "deposit",
+  "action-complete",
+  "action-failed",
+  "quest-entry",
+  "quest-entry-accepted",
   "other",
 ]);
 
 const NotificationSchema = object({
-  id: string().uuid(),
-  source_user_id: string().uuid(),
-  destination_user_id: string().uuid(),
-  org_id: string().uuid(),
-  asset_id: optional(string().uuid()),
+  id: uuid(),
+  source_user_id: uuid(),
+  destination_user_id: uuid(),
+  org_id: optional(uuid()),
+  asset_id: optional(uuid()),
+  reaction_id: optional(uuid()),
+  action_id: optional(uuid()),
   type: NotificationTypeSchema,
   content: object({
     text: optional(string()),
@@ -44,7 +54,15 @@ const NotificationSchema = object({
         type: zodEnum(["success", "error"]),
       })
     ),
-  }),
+    badge: optional(
+      object({
+        name: string(),
+        description: optional(string()),
+        slug: optional(string()),
+      })
+    ),
+    value: optional(string()),
+  }).loose(),
   viewed: boolean(),
   created_at: string(),
   last_updated: string(),
