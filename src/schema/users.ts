@@ -7,13 +7,15 @@ import {
   enum as zodEnum,
   type z,
   optional,
-  nullable
+  nullable,
+  uuid
 } from "zod";
 
 const ProfileSchema = object({
-  id: string().uuid(),
-  user_id: string().uuid(),
+  id: uuid(),
+  user_id: uuid(),
   username: optional(nullable(string())),
+  name: optional(nullable(string())),
   avatar_path: optional(nullable(string())),
   bio: optional(nullable(string())),
   urls: optional(

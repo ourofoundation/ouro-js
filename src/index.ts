@@ -16,6 +16,7 @@ export * from "./schema/services";
 export * from "./schema/replications";
 export * from "./schema/blueprints";
 export * from "./schema/reactions";
+export * from "./schema/tags";
 
 // Utils - exported individually for better tree-shaking
 export { filterListToString } from "./utils/dataset";
