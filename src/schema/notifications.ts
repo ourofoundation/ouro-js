@@ -28,6 +28,10 @@ const NotificationTypeSchema = zodEnum([
   "action-failed",
   "quest-entry",
   "quest-entry-accepted",
+  "onboarding-complete",
+  "onboarding-action-required",
+  "route-earnings-milestone",
+  "route-payout",
   "other",
 ]);
 

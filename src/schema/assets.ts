@@ -14,6 +14,7 @@ import {
 import {
   AssetTypeSchema,
   MonetizationSchema,
+  PriceCurrencySchema,
   StatusSchema,
   SourceSchema,
   VisibilitySchema,
@@ -63,6 +64,10 @@ const AssetSchema = object({
   unit_cost: optional(nullable(number())),
   cost_accounting: optional(nullable(zodEnum(["fixed", "variable"]))),
   cost_unit: optional(nullable(string())),
+  price_currency: optional(PriceCurrencySchema),
+  stripe_product_id: optional(nullable(string())),
+  stripe_price_id: optional(nullable(string())),
+  stripe_meter_id: optional(nullable(string())),
   metadata: optional(nullable(AssetMetadataSchema)),
   preview: optional(nullable(array(record(string(), any())))),
   state: StatusSchema,

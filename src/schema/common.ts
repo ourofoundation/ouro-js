@@ -39,6 +39,8 @@ const RoleSchema = zodEnum(["admin", "read", "write", "none"]);
 
 const MonetizationSchema = zodEnum(["none", "pay-to-unlock", "pay-per-use"]);
 
+const PriceCurrencySchema = zodEnum(["usd", "btc"]);
+
 const EmbeddingSchema = object({
   id: string(),
   user_id: string(),
@@ -101,6 +103,7 @@ export {
   RoleSchema,
   VisibilitySchema,
   MonetizationSchema,
+  PriceCurrencySchema,
   ConnectionSchema,
   EmbeddingSchema,
   AssetTypeSchema,
@@ -115,6 +118,7 @@ export type Connection = z.infer<typeof ConnectionSchema>;
 export type Embedding = z.infer<typeof EmbeddingSchema>;
 export type Visibility = z.infer<typeof VisibilitySchema>;
 export type Monetization = z.infer<typeof MonetizationSchema>;
+export type PriceCurrency = z.infer<typeof PriceCurrencySchema>;
 export type AssetTypes = z.infer<typeof AssetTypeSchema>;
 export type PurchaseAsset = z.infer<typeof PurchaseAssetSchema>;
 export type Permission = z.infer<typeof PermissionSchema>;
