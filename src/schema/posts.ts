@@ -14,7 +14,12 @@ import {
   type ZodType
 } from "zod";
 
-import { AssetMetadataSchema, AssetSchema, CreateAssetSchema } from "./assets";
+import {
+  AssetMetadataSchema,
+  AssetSchema,
+  CreateAssetSchema,
+  normalizeAssetConfigForParsing,
+} from "./assets";
 import { AssetTypeSchema } from "./common";
 
 const TipTapNode: ZodType<any> = lazy(() =>
@@ -69,7 +74,7 @@ const CreatePostSchema = CreateAssetSchema.extend({
     .transform((x) => x?.trim())
     .transform((x) => x || null),
   preview: TipTapSchema,
-});
+}).transform((value) => normalizeAssetConfigForParsing(value));
 
 const ReadPostSchema = PostSchema.extend({
   content: optional(
@@ -106,7 +111,8 @@ const UpdatePostSchema = PostSchema.partial()
   })
   .extend({
     last_updated: string().default(() => new Date().toISOString()),
-  });
+  })
+  .transform((value) => normalizeAssetConfigForParsing(value));
 
 export {
   TipTapSchema,

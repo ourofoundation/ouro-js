@@ -1,6 +1,7 @@
 import {
     object,
     string,
+    uuid,
     boolean,
     type z,
     record,
@@ -10,9 +11,9 @@ import {
 } from "zod";
 
 const reactionSchema = object({
-    id: string().uuid(),
-    user_id: string().uuid(),
-    asset_id: string().uuid(),
+    id: uuid(),
+    user_id: uuid(),
+    asset_id: uuid(),
     content: record(string(), any()),
     created_at: string(),
     active: optional(nullable(boolean())),

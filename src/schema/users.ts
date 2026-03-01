@@ -11,6 +11,8 @@ import {
   uuid
 } from "zod";
 
+const ActorTypeSchema = zodEnum(["base", "agent", "verified"]);
+
 const ProfileSchema = object({
   id: uuid(),
   user_id: uuid(),
@@ -25,14 +27,13 @@ const ProfileSchema = object({
       })
     )
   ),
-  post_id: optional(nullable(string().uuid())),
-  is_agent: boolean(),
+  post_id: optional(nullable(uuid())),
+  actor_type: ActorTypeSchema,
   plan_type: zodEnum(["free", "gold"]),
   last_active: string(),
 });
 
 const ReadProfileSchema = ProfileSchema.extend({
-  is_agent: boolean(),
   isFollowing: boolean(),
   isFollowed: boolean(),
   isSelf: boolean(),
@@ -48,11 +49,9 @@ const UpdateProfileSchema = ProfileSchema.partial().omit({
   last_active: true,
   // username: true, // once set, users cannot update their username
 });
-// .extend({
-//   user_id: z.string().uuid(),
-// })
 
-export { ProfileSchema, ReadProfileSchema, UpdateProfileSchema };
+export { ActorTypeSchema, ProfileSchema, ReadProfileSchema, UpdateProfileSchema };
+export type ActorType = z.infer<typeof ActorTypeSchema>;
 export type Profile = z.infer<typeof ProfileSchema>;
 export type UpdateProfile = z.infer<typeof UpdateProfileSchema>;
 export type ReadProfile = z.infer<typeof ReadProfileSchema>;

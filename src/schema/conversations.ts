@@ -1,7 +1,7 @@
-import { uuidv7 } from "uuidv7";
 import {
   object,
   string,
+  uuid,
   array,
   type z,
   record,
@@ -16,7 +16,12 @@ import {
   MonetizationSchema,
   VisibilitySchema,
 } from "./common";
-import { AssetMetadataSchema, AssetSchema, CreateAssetSchema } from "./assets";
+import {
+  AssetMetadataSchema,
+  AssetSchema,
+  CreateAssetSchema,
+  normalizeAssetConfigForParsing,
+} from "./assets";
 import { TipTapSchema } from "./posts";
 import { ProfileSchema } from "./users";
 
@@ -34,15 +39,18 @@ const ConversationSchema = AssetSchema.extend({
   users: optional(nullable(array(ProfileSchema))),
 });
 
-const CreateConversationSchema = CreateAssetSchema.extend({
+const BaseCreateConversationSchema = CreateAssetSchema.extend({
   asset_type: literal("conversation").default("conversation"),
   monetization: MonetizationSchema.default("none"),
   visibility: VisibilitySchema.default("private"),
   metadata: ConversationMetadataSchema,
 });
 
+const CreateConversationSchema = BaseCreateConversationSchema
+  .transform((value) => normalizeAssetConfigForParsing(value));
+
 // Partial because we can make updates to conversations without providing all fields
-const UpdateConversationSchema = CreateConversationSchema.omit({
+const UpdateConversationSchema = BaseCreateConversationSchema.omit({
   id: true,
   org_id: true,
   team_id: true,
@@ -50,16 +58,16 @@ const UpdateConversationSchema = CreateConversationSchema.omit({
   // user: true,
   // organization: true,
   // slug: true,
-}).partial();
+}).partial().transform((value) => normalizeAssetConfigForParsing(value));
 
 const MessageSchema = object({
-  id: string().uuid(),
-  conversation_id: string().uuid(),
-  user_id: string().uuid(),
+  id: uuid(),
+  conversation_id: uuid(),
+  user_id: uuid(),
   user: optional(nullable(ProfileSchema)),
   created_at: string(),
   last_updated: string(),
-  viewers: array(string().uuid()),
+  viewers: array(uuid()),
   json: TipTapSchema,
   text: string(),
   metadata: optional(nullable(record(string(), any()))),

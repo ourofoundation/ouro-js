@@ -2,6 +2,7 @@ import { uuidv7 } from "uuidv7";
 import {
   object,
   string,
+  uuid,
   number,
   array,
   type z,
@@ -12,13 +13,13 @@ import {
 } from "zod";
 
 import { RoleSchema, VisibilitySchema } from "./common";
-import { OrganizationsSchema } from "./organizations";
+import { OrganizationsSchema, ActorTypePolicySchema, SourcePolicySchema } from "./organizations";
 import { ProfileSchema } from "./users";
 import { record as zodRecord } from "zod";
 
 const TeamSchema = object({
-  id: string().uuid(),
-  org_id: string().uuid(),
+  id: uuid(),
+  org_id: uuid(),
   organization: OrganizationsSchema,
   name: string(),
   description: optional(
@@ -31,10 +32,12 @@ const TeamSchema = object({
   ),
   default_role: RoleSchema,
   visibility: VisibilitySchema,
+  actor_type_policy: optional(nullable(ActorTypePolicySchema)),
+  source_policy: optional(nullable(SourcePolicySchema)),
   userMembership: optional(
     nullable(
       object({
-        user_id: string().uuid(),
+        user_id: uuid(),
         role: RoleSchema,
       })
     )
@@ -42,7 +45,7 @@ const TeamSchema = object({
   memberCount: optional(nullable(number())),
   members: array(
     object({
-      user_id: string().uuid(),
+      user_id: uuid(),
       role: RoleSchema,
       added_at: string(),
       user: optional(nullable(ProfileSchema.partial())),
@@ -72,7 +75,7 @@ const ReadTeamSchema = TeamSchema.extend({
   userMembership: optional(
     nullable(
       object({
-        user_id: string().uuid(),
+        user_id: uuid(),
         role: RoleSchema,
       })
     )
@@ -80,7 +83,7 @@ const ReadTeamSchema = TeamSchema.extend({
   memberCount: number(),
   members: array(
     object({
-      user_id: string().uuid(),
+      user_id: uuid(),
       role: RoleSchema,
       added_at: string(),
       user: optional(nullable(ProfileSchema.partial())),
@@ -110,7 +113,7 @@ const UpdateTeamSchema = TeamSchema.partial()
     created_at: true,
   })
   .extend({
-    id: string().uuid(),
+    id: uuid(),
   });
 
 export {

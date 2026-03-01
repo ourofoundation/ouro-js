@@ -1,6 +1,7 @@
 import {
   object,
   string,
+  uuid,
   number,
   enum as zodEnum,
   type z,
@@ -10,10 +11,15 @@ import {
   nullable
 } from "zod";
 
-import { AssetSchema, CreateAssetSchema, AssetMetadataSchema } from "./assets";
+import {
+  AssetSchema,
+  CreateAssetSchema,
+  AssetMetadataSchema,
+  normalizeAssetConfigForParsing,
+} from "./assets";
 
 const BaseFileMetadataSchema = object({
-  id: string().uuid(), // The id of the file object
+  id: uuid(), // The id of the file object
   path: string(), // The path of the file in storage
   bucket: zodEnum(["public-files", "files"]),
   name: string(),
@@ -55,7 +61,7 @@ const CreateFileSchema = discriminatedUnion("state", [
     state: literal("in-progress").default("in-progress"),
     metadata: StubFileMetadataSchema,
   }),
-]);
+]).transform((value) => normalizeAssetConfigForParsing(value));
 
 const updateFileSchema = FileSchema.partial()
   .omit({
@@ -70,7 +76,8 @@ const updateFileSchema = FileSchema.partial()
   })
   .extend({
     last_updated: string().default(() => new Date().toISOString()),
-  });
+  })
+  .transform((value) => normalizeAssetConfigForParsing(value));
 
 export { FileSchema, CreateFileSchema, updateFileSchema };
 export type File = z.infer<typeof FileSchema>;

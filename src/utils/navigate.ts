@@ -1,4 +1,5 @@
 import { filterListToString } from "./dataset";
+import { GLOBAL_ORG_ID } from "../schema/constants";
 
 const createNameUrlSlug = (name: string) => {
   return (
@@ -29,7 +30,7 @@ const createUrlSlug = (asset: any) => {
     return `/comments/${asset.id}`;
   }
   const entityName =
-    asset.org_id !== "00000000-0000-0000-0000-000000000000"
+    asset.org_id !== GLOBAL_ORG_ID
       ? asset.organization.name
       : asset.user.username;
   const name = asset.name ? createNameUrlSlug(asset.name) : asset.id;

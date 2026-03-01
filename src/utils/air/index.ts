@@ -4,7 +4,7 @@ import { Profile } from "../../schema/users";
 interface InlineAssetAttrs {
   id: string;
   assetType: string;
-  viewMode: string;
+  viewMode: "card" | "preview" | "list";
   filters?: any;
   partial?: boolean;
 }

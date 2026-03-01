@@ -1,6 +1,7 @@
 import {
   object,
   string,
+  uuid,
   number,
   array,
   literal,
@@ -10,7 +11,12 @@ import {
   enum as zodEnum
 } from "zod";
 
-import { AssetSchema, CreateAssetSchema, AssetMetadataSchema } from "./assets";
+import {
+  AssetSchema,
+  CreateAssetSchema,
+  AssetMetadataSchema,
+  normalizeAssetConfigForParsing,
+} from "./assets";
 
 const DatasetFromFileMetadataSchema = object({
   type: string(),
@@ -18,7 +24,7 @@ const DatasetFromFileMetadataSchema = object({
   path: string(),
   extension: string(),
   name: string(),
-  id: string().uuid(), // storage file object id,
+  id: uuid(), // storage file object id,
   bucket: zodEnum(["public-files", "files"]),
 });
 
@@ -46,13 +52,13 @@ const CreateDatasetFromFileSchema = CreateAssetSchema.extend({
     ...DatasetFromFileMetadataSchema.shape,
   }),
   preview: array(record(string(), any())),
-});
+}).transform((value) => normalizeAssetConfigForParsing(value));
 
 const CreateDatasetFromSchemaSchema = CreateAssetSchema.extend({
   asset_type: literal("dataset").default("dataset"),
   metadata: DatasetMetadataSchema,
   preview: array(record(string(), any())),
-});
+}).transform((value) => normalizeAssetConfigForParsing(value));
 
 const updateDatasetSchema = DatasetSchema.partial()
   .omit({
@@ -68,7 +74,8 @@ const updateDatasetSchema = DatasetSchema.partial()
   .extend({
     asset_type: literal("dataset").default("dataset"),
     last_updated: string().default(() => new Date().toISOString()),
-  });
+  })
+  .transform((value) => normalizeAssetConfigForParsing(value));
 
 export {
   DatasetSchema,

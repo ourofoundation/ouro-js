@@ -1,6 +1,7 @@
 import {
   object,
   string,
+  uuid,
   number,
   array,
   enum as zodEnum,
@@ -23,6 +24,21 @@ import { OrganizationsSchema } from "./organizations";
 import { TeamSchema } from "./teams";
 import { ProfileSchema } from "./users";
 import { uuidv7 } from "uuidv7";
+import { GLOBAL_ORG_ID, GLOBAL_TEAM_ID } from "./constants";
+
+type AssetConfigInput = {
+  org_id?: string | null;
+  visibility?: z.infer<typeof VisibilitySchema> | null;
+};
+
+const normalizeAssetConfigForParsing = <T extends AssetConfigInput>(
+  input: T
+): T => {
+  if (input.org_id === GLOBAL_ORG_ID && input.visibility === "organization") {
+    return { ...input, visibility: "public" as T["visibility"] };
+  }
+  return input;
+};
 
 const AssetMetadataSchema = object({
   doi_url: optional(nullable(string())),
@@ -34,14 +50,14 @@ const AssetMetadataSchema = object({
 })
 
 const AssetSchema = object({
-  id: string().uuid(),
-  user_id: string().uuid(),
+  id: uuid(),
+  user_id: uuid(),
   user: optional(ProfileSchema.partial()),
-  org_id: string().uuid(),
+  org_id: uuid(),
   organization: optional(OrganizationsSchema.partial()),
-  team_id: string().uuid(),
+  team_id: uuid(),
   team: optional(TeamSchema.partial()),
-  parent_id: optional(nullable(string().uuid())),
+  parent_id: optional(nullable(uuid())),
   parent: optional(record(string(), any())),
   license_id: string(),
   license: optional(record(string(), any())),
@@ -86,11 +102,11 @@ const CreateAssetSchema = AssetSchema.partial()
     slug: true,
   })
   .extend({
-    id: string().uuid().default(() => uuidv7()),
-    team_id: nullable(string().uuid())
-      .default("00000000-0000-0000-0000-000000000000"),
-    org_id: nullable(string().uuid())
-      .default("00000000-0000-0000-0000-000000000000"),
+    id: uuid().default(() => uuidv7()),
+    team_id: nullable(uuid())
+      .default(GLOBAL_TEAM_ID),
+    org_id: nullable(uuid())
+      .default(GLOBAL_ORG_ID),
     name: string()
       .min(1, { message: "Name cannot be empty" })
       .max(255, { message: "Name must be less than 255 characters" }),
@@ -110,9 +126,15 @@ const UpdateAssetSchema = AssetSchema.partial().omit({
   organization: true,
   team: true,
   slug: true,
-});
+}).transform((value) => normalizeAssetConfigForParsing(value));
 
-export { AssetMetadataSchema, AssetSchema, CreateAssetSchema, UpdateAssetSchema };
+export {
+  AssetMetadataSchema,
+  AssetSchema,
+  CreateAssetSchema,
+  UpdateAssetSchema,
+  normalizeAssetConfigForParsing,
+};
 export type AssetMetadata = z.infer<typeof AssetMetadataSchema>;
 export type Asset = z.infer<typeof AssetSchema>;
 export type CreateAsset = z.infer<typeof CreateAssetSchema>;

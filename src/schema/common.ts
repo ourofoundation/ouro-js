@@ -1,6 +1,7 @@
 import {
   object,
   string,
+  uuid,
   number,
   array,
   enum as zodEnum,
@@ -63,12 +64,12 @@ const ConnectionTypeSchema = zodEnum([
 ]);
 
 const ConnectionSchema = object({
-  id: string().uuid(),
-  user_id: string().uuid(),
+  id: uuid(),
+  user_id: uuid(),
   type: ConnectionTypeSchema,
-  action_id: optional(nullable(string().uuid())),
-  source_id: string().uuid(),
-  target_id: string().uuid(),
+  action_id: optional(nullable(uuid())),
+  source_id: uuid(),
+  target_id: uuid(),
   source_asset_type: AssetTypeSchema,
   target_asset_type: AssetTypeSchema,
   created_at: string(),
@@ -76,21 +77,21 @@ const ConnectionSchema = object({
 });
 
 const PurchaseAssetSchema = object({
-  assetId: string().uuid(),
+  assetId: uuid(),
   method: zodEnum(["checkout", "api"]),
   assetType: AssetTypeSchema,
 });
 
 const PermissionSchema = object({
-  id: string().uuid(),
+  id: uuid(),
   role: RoleSchema,
   user: object({
-    user_id: string().uuid(),
+    user_id: uuid(),
   }),
-  user_id: nullable(string().uuid()),
-  org_id: nullable(string().uuid()),
+  user_id: nullable(uuid()),
+  org_id: nullable(uuid()),
   asset_type: AssetTypeSchema,
-  asset_id: string().uuid(),
+  asset_id: uuid(),
   created_at: string(),
   last_updated: string(),
 });

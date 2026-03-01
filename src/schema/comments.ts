@@ -11,7 +11,7 @@ import {
   nullable
 } from "zod";
 
-import { AssetSchema } from "./assets";
+import { AssetSchema, normalizeAssetConfigForParsing } from "./assets";
 
 const CommentSchema = AssetSchema.extend({
   asset_type: literal("comment").default("comment"),
@@ -36,7 +36,8 @@ const CreateCommentSchema = CommentSchema.partial()
     name: string().default(""),
     created_at: string().default(() => new Date().toISOString()),
     last_updated: string().default(() => new Date().toISOString()),
-  });
+  })
+  .transform((value) => normalizeAssetConfigForParsing(value));
 
 export { CommentSchema, CreateCommentSchema };
 export type Comment = z.infer<typeof CommentSchema>;

@@ -1,6 +1,7 @@
 import {
   object,
   string,
+  uuid,
   number,
   array,
   type z,
@@ -13,7 +14,12 @@ import {
 } from "zod";
 
 import { AssetTypeSchema } from "./common";
-import { AssetMetadataSchema, AssetSchema, CreateAssetSchema } from "./assets";
+import {
+  AssetMetadataSchema,
+  AssetSchema,
+  CreateAssetSchema,
+  normalizeAssetConfigForParsing,
+} from "./assets";
 
 const AuthType = zodEnum(["Personal Access Token", "Ouro", "None", "OAuth 2.0"]);
 
@@ -39,7 +45,7 @@ const ServiceSchema = AssetSchema.extend({
 const CreateServiceSchema = CreateAssetSchema.extend({
   asset_type: AssetTypeSchema.refine((x) => "service" === x),
   metadata: ServiceMetadataSchema,
-});
+}).transform((value) => normalizeAssetConfigForParsing(value));
 
 const UpdateServiceSchema = ServiceSchema.partial()
   .omit({
@@ -54,7 +60,8 @@ const UpdateServiceSchema = ServiceSchema.partial()
   })
   .extend({
     last_updated: string().default(() => new Date().toISOString()),
-  });
+  })
+  .transform((value) => normalizeAssetConfigForParsing(value));
 
 const RouteDetailSchema = object({
   id: string(),
@@ -82,14 +89,14 @@ const RouteSchema = AssetSchema.extend({
 });
 
 const ActionSchema = object({
-  id: string().uuid(),
-  user_id: string().uuid(),
-  route_id: string().uuid(),
+  id: uuid(),
+  user_id: uuid(),
+  route_id: uuid(),
   metadata: optional(nullable(record(string(), any()))),
   response: optional(nullable(record(string(), any()))),
   side_effects: boolean().default(true),
-  input_asset_id: optional(nullable(string().uuid())),
-  output_asset_id: optional(nullable(string().uuid())),
+  input_asset_id: optional(nullable(uuid())),
+  output_asset_id: optional(nullable(uuid())),
   input_asset: optional(nullable(AssetSchema)),
   output_asset: optional(nullable(AssetSchema)),
   status: zodEnum(["queued", "in-progress", "success", "error", 'done']),
