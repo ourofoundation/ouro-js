@@ -1,33 +1,51 @@
 import { marked } from "marked";
 
-const katexParser = {
-  name: "katex",
-  level: "inline",
+const katexBlockParser = {
+  name: "katexBlock",
+  level: "block",
   start(src: string) {
-    const match = src.match(/\\\[|\\\(/);
+    const match = src.match(/\\\[/);
     return match ? match.index : undefined;
   },
   end(src: string) {
-    const match = src.match(/\s\\\]|\s\\\)/);
+    const match = src.match(/\s\\\]/);
     return match ? (match.index ?? 0) + (match[0]?.length ?? 0) : undefined;
   },
   tokenizer(src: string, tokens: any) {
     const displayRule = /^\\\[([\s\S]*?)\\\]/;
-    const inlineRule = /^\\\(([\s\S]*?)\\\)/;
-
-    let match = displayRule.exec(src);
+    const match = displayRule.exec(src);
     if (match) {
       return {
-        type: "katex",
+        type: "katexBlock",
         raw: match[0],
         latex: match[1].trim(),
         displayMode: true,
       };
     }
-    match = inlineRule.exec(src);
+  },
+  renderer(token: any) {
+    // Non-self-closing span is important for client-side inline flow around the node.
+    return `<span data-latex="${token.latex}" data-display-mode="${token.displayMode}"></span>`;
+  },
+};
+
+const katexInlineParser = {
+  name: "katexInline",
+  level: "inline",
+  start(src: string) {
+    const match = src.match(/\\\(/);
+    return match ? match.index : undefined;
+  },
+  end(src: string) {
+    const match = src.match(/\s\\\)/);
+    return match ? (match.index ?? 0) + (match[0]?.length ?? 0) : undefined;
+  },
+  tokenizer(src: string, tokens: any) {
+    const inlineRule = /^\\\(([\s\S]*?)\\\)/;
+    const match = inlineRule.exec(src);
     if (match) {
       return {
-        type: "katex",
+        type: "katexInline",
         raw: match[0],
         latex: match[1].trim(),
         displayMode: false,
@@ -114,7 +132,12 @@ const userMentionExtension = {
 
 marked.use({
   gfm: true,
-  extensions: [assetComponentExtension, userMentionExtension, katexParser],
+  extensions: [
+    assetComponentExtension,
+    userMentionExtension,
+    katexBlockParser,
+    katexInlineParser,
+  ],
 });
 
 export function parseMarkdown(markdown: string) {

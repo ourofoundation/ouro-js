@@ -47,6 +47,8 @@ const AssetMetadataSchema = object({
   github_url: optional(nullable(string())),
   originality: zodEnum(["original", "derivative", "third-party"]),
   source: optional(nullable(string())),
+  /** When present on a comment, the id of the comment the user directly replied to (for reply-to-reply; parent_id is the top-level comment). */
+  reply_to_comment_id: optional(nullable(string())),
 })
 
 const AssetSchema = object({

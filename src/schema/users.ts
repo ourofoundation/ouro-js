@@ -20,6 +20,8 @@ const ProfileSchema = object({
   name: optional(nullable(string())),
   avatar_path: optional(nullable(string())),
   bio: optional(nullable(string())),
+  is_provisioned: optional(boolean()),
+  claimed_at: optional(nullable(string())),
   urls: optional(
     array(
       object({
@@ -47,6 +49,8 @@ const UpdateProfileSchema = ProfileSchema.partial().omit({
   id: true,
   user_id: true,
   last_active: true,
+  is_provisioned: true,
+  claimed_at: true,
   // username: true, // once set, users cannot update their username
 });
 
