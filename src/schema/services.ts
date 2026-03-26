@@ -29,7 +29,6 @@ const BaseServiceMetadataSchema = object({
   version: optional(nullable(string())),
   spec_path: optional(nullable(string())),
   spec_url: optional(nullable(string())),
-  auth_token: optional(nullable(string())),
   auth_url: optional(nullable(string())),
 });
 
@@ -76,6 +75,7 @@ const RouteDetailSchema = object({
   input_type: optional(nullable(zodEnum(["file", "dataset", "post"]))),
   input_filter: optional(nullable(zodEnum(["audio", "video", "image", "pdf", "3d model", "atomic structure"]))),
   input_file_extension: optional(nullable(string())),
+  input_file_extensions: optional(nullable(array(string()))),
   output_type: optional(nullable(zodEnum(["file", "dataset", "post"]))),
   output_file_extension: optional(nullable(string())),
   security: optional(nullable(record(string(), any()))),
@@ -99,6 +99,8 @@ const ActionSchema = object({
   output_asset_id: optional(nullable(uuid())),
   input_asset: optional(nullable(AssetSchema)),
   output_asset: optional(nullable(AssetSchema)),
+  webhook_url: optional(nullable(string())),
+  webhook_token: optional(nullable(string())),
   status: zodEnum(["queued", "in-progress", "success", "error", 'done']),
   created_at: string(),
   last_updated: string(),

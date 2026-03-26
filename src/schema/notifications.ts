@@ -32,6 +32,7 @@ const NotificationTypeSchema = zodEnum([
   "onboarding-action-required",
   "route-earnings-milestone",
   "route-payout",
+  "ownership-transfer",
   "other",
 ]);
 

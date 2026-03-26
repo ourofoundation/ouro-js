@@ -1,5 +1,114 @@
 import { marked } from "marked";
 
+/** Safe for double-quoted HTML attributes (e.g. data-latex). */
+function escapeHtmlAttr(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;");
+}
+
+function mathSpanHtml(latex: string, displayMode: boolean): string {
+  return `<span data-latex="${escapeHtmlAttr(latex)}" data-display-mode="${displayMode}"></span>`;
+}
+
+/** Same-line `$...$` that looks like a plain price (e.g. $5, $3.50) — not math. */
+function isLikelyCurrencyAmount(s: string): boolean {
+  return /^\d+(\.\d+)?$/.test(s);
+}
+
+/**
+ * First `$` in `src` opens inline math only if it is not `$$` and the segment is not a bare amount.
+ * Digit after `$` is allowed when the rest of the (same-line) formula contains obvious math syntax.
+ */
+function dollarInlineOpenOk(src: string): boolean {
+  if (!src.startsWith("$") || src.startsWith("$$")) return false;
+  const rest = src.slice(1);
+  const c = rest[0];
+  if (!c || c === " " || c === "\t" || c === "$") return false;
+  if (!/\d/.test(c)) return true;
+  return /[+\-*^_=\\{<>\/()[\]|]/.test(rest.slice(1));
+}
+
+/** Closing `$` for inline math at start of `src` (which must begin with a single `$`). */
+function endIndexOfDollarInline(src: string): number {
+  let i = 1;
+  while (i < src.length) {
+    const ch = src[i];
+    if (ch === "\n") return -1;
+    if (ch === "\\") {
+      i += 2;
+      continue;
+    }
+    if (ch === "$") {
+      if (src[i + 1] === "$") {
+        i += 2;
+        continue;
+      }
+      return i;
+    }
+    i++;
+  }
+  return -1;
+}
+
+const katexDollarBlock = {
+  name: "katexDollarBlock",
+  level: "block",
+  start(src: string) {
+    const match = src.match(/\$\$/);
+    return match ? match.index : undefined;
+  },
+  end(src: string) {
+    const match = src.match(/\$\$/);
+    return match ? (match.index ?? 0) + 2 : undefined;
+  },
+  tokenizer(src: string, tokens: any) {
+    const rule = /^\$\$([\s\S]*?)\$\$/;
+    const match = rule.exec(src);
+    if (match) {
+      return {
+        type: "katexDollarBlock",
+        raw: match[0],
+        latex: match[1].trim(),
+        displayMode: true,
+      };
+    }
+  },
+  renderer(token: any) {
+    return mathSpanHtml(token.latex, true);
+  },
+};
+
+const katexDollarInline = {
+  name: "katexDollarInline",
+  level: "inline",
+  start(src: string) {
+    const match = src.match(/\$(?!\$)/);
+    return match ? match.index : undefined;
+  },
+  end(src: string) {
+    const match = src.match(/\$(?!\$)/);
+    return match ? (match.index ?? 0) + 1 : undefined;
+  },
+  tokenizer(src: string, tokens: any) {
+    if (!dollarInlineOpenOk(src)) return;
+    const close = endIndexOfDollarInline(src);
+    if (close < 0) return;
+    const latex = src.slice(1, close).trim();
+    if (latex.length === 0 || isLikelyCurrencyAmount(latex)) return;
+    return {
+      type: "katexDollarInline",
+      raw: src.slice(0, close + 1),
+      latex,
+      displayMode: false,
+    };
+  },
+  renderer(token: any) {
+    return mathSpanHtml(token.latex, false);
+  },
+};
+
 const katexBlockParser = {
   name: "katexBlock",
   level: "block",
@@ -25,7 +134,7 @@ const katexBlockParser = {
   },
   renderer(token: any) {
     // Non-self-closing span is important for client-side inline flow around the node.
-    return `<span data-latex="${token.latex}" data-display-mode="${token.displayMode}"></span>`;
+    return mathSpanHtml(token.latex, token.displayMode);
   },
 };
 
@@ -54,7 +163,7 @@ const katexInlineParser = {
   },
   renderer(token: any) {
     // STRANGE: The non-self-closing tag is important for client side to render as inline and render text after it
-    return `<span data-latex="${token.latex}" data-display-mode="${token.displayMode}"></span>`;
+    return mathSpanHtml(token.latex, token.displayMode);
   },
 };
 
@@ -109,24 +218,33 @@ const userMentionExtension = {
   name: "userMention",
   level: "inline",
   start(src: string) {
-    return src.match(/`\{@/)?.index;
+    const m = src.match(/`\{@|(?<![`])\{@/);
+    return m ? m.index : undefined;
   },
   end(src: string) {
-    return src.match(/\}`/)?.index;
+    return src.match(/\}`/)?.index ?? src.match(/(?<![`])\{@[^}]*\}/)?.index;
   },
   tokenizer(src: string, tokens: any) {
-    const rule = /^`\{@([a-zA-Z0-9_]+)\}`/;
-    const match = rule.exec(src);
-    if (match) {
+    const codeWrapped = /^`\{@([a-zA-Z0-9_]+)\}`/.exec(src);
+    if (codeWrapped) {
       return {
         type: "userMention",
-        raw: match[0],
-        username: match[1],
+        raw: codeWrapped[0],
+        username: codeWrapped[1],
+      };
+    }
+    const bracesOnly = /^\{@([a-zA-Z0-9_]+)\}/.exec(src);
+    if (bracesOnly) {
+      return {
+        type: "userMention",
+        raw: bracesOnly[0],
+        username: bracesOnly[1],
       };
     }
   },
   renderer(token: any) {
-    return `<user-mention username="${token.username}" data-label="${token.username}"></user-mention>`;
+    const u = escapeHtmlAttr(token.username);
+    return `<user-mention username="${u}" data-label="${u}"></user-mention>`;
   },
 };
 
@@ -135,9 +253,35 @@ marked.use({
   extensions: [
     assetComponentExtension,
     userMentionExtension,
+    katexDollarBlock,
     katexBlockParser,
+    katexDollarInline,
     katexInlineParser,
   ],
+  renderer: {
+    list(token: any) {
+      if (
+        !token.ordered &&
+        token.items?.length > 0 &&
+        token.items.every((item: any) => item.task)
+      ) {
+        const body = token.items
+          .map((item: any) => {
+            const inner = item.tokens.filter(
+              (t: any) => t.type !== "checkbox"
+            );
+            let text = (this as any).parser.parse(inner, !!item.loose);
+            if (!item.loose) text = `<p>${text}</p>`;
+            const checked = item.checked ? "true" : "false";
+            const ckAttr = item.checked ? ' checked="checked"' : "";
+            return `<li data-type="taskItem" data-checked="${checked}"><label contenteditable="false"><input type="checkbox"${ckAttr}></label><div>${text}</div></li>`;
+          })
+          .join("\n");
+        return `<ul data-type="taskList">\n${body}\n</ul>\n`;
+      }
+      return false as any;
+    },
+  },
 });
 
 export function parseMarkdown(markdown: string) {

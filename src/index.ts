@@ -24,4 +24,9 @@ export { getAssetUrl } from "./utils/navigate";
 export { createUrlSlug } from "./utils/navigate";
 export { createNameUrlSlug } from "./utils/navigate";
 export { parseMarkdown } from "./utils/air/markdown-parser";
-export { getReferencesInContent } from "./utils/air";
+export {
+  type ExtractedContentAsset,
+  getReferencesInContent,
+  parseAssetLinkShorthand,
+  parseOuroAssetUrl,
+} from "./utils/air";
