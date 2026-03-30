@@ -12,14 +12,40 @@ function mathSpanHtml(latex: string, displayMode: boolean): string {
   return `<span data-latex="${escapeHtmlAttr(latex)}" data-display-mode="${displayMode}"></span>`;
 }
 
-/** Same-line `$...$` that looks like a plain price (e.g. $5, $3.50) — not math. */
-function isLikelyCurrencyAmount(s: string): boolean {
-  return /^\d+(\.\d+)?$/.test(s);
+/**
+ * Detect whether the text between `$…$` is a currency amount rather than math.
+ *
+ * Covers bare numbers ($50, $3.50, $1,000), numbers with magnitude suffixes
+ * ($50K, $1.5M), and numeric-only fragments produced when a price range like
+ * "$50-$100" is split at the inner `$` (content = "50-").
+ *
+ * If the content starts with a digit but also contains single-letter tokens
+ * (likely math variables such as x, n, k) or LaTeX commands, it is NOT
+ * treated as currency so real math like `$2x + 3$` still renders.
+ */
+function isLikelyCurrency(s: string): boolean {
+  if (!/^\d/.test(s)) return false;
+
+  if (/^[\d,]+(\.\d+)?$/.test(s)) return true;
+  if (/^[\d,]+(\.\d+)?[KkMmBbTt]$/.test(s)) return true;
+
+  if (/\\[a-zA-Z]/.test(s)) return false;
+
+  if (!/[a-zA-Z\\{}]/.test(s)) return true;
+
+  const hasSingleLetterToken = /(?:^|[^a-zA-Z])[a-zA-Z](?:[^a-zA-Z]|$)/.test(s);
+  if (!hasSingleLetterToken) return true;
+
+  return false;
 }
 
 /**
- * First `$` in `src` opens inline math only if it is not `$$` and the segment is not a bare amount.
- * Digit after `$` is allowed when the rest of the (same-line) formula contains obvious math syntax.
+ * The opening `$` in `src` may start inline math only when:
+ *  - it is a single `$` (not `$$`),
+ *  - the next character is non-whitespace and not another `$`, and
+ *  - when the next character is a digit, the captured segment (up to the
+ *    closing `$`) contains evidence of math (a letter, backslash, or brace)
+ *    rather than just a currency amount.
  */
 function dollarInlineOpenOk(src: string): boolean {
   if (!src.startsWith("$") || src.startsWith("$$")) return false;
@@ -27,7 +53,11 @@ function dollarInlineOpenOk(src: string): boolean {
   const c = rest[0];
   if (!c || c === " " || c === "\t" || c === "$") return false;
   if (!/\d/.test(c)) return true;
-  return /[+\-*^_=\\{<>\/()[\]|]/.test(rest.slice(1));
+
+  const nextDollar = rest.indexOf("$");
+  if (nextDollar < 0) return false;
+  const segment = rest.slice(0, nextDollar);
+  return /[a-zA-Z\\{]/.test(segment);
 }
 
 /** Closing `$` for inline math at start of `src` (which must begin with a single `$`). */
@@ -96,7 +126,7 @@ const katexDollarInline = {
     const close = endIndexOfDollarInline(src);
     if (close < 0) return;
     const latex = src.slice(1, close).trim();
-    if (latex.length === 0 || isLikelyCurrencyAmount(latex)) return;
+    if (latex.length === 0 || isLikelyCurrency(latex)) return;
     return {
       type: "katexDollarInline",
       raw: src.slice(0, close + 1),

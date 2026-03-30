@@ -65,6 +65,7 @@ const MessageSchema = object({
   conversation_id: uuid(),
   user_id: uuid(),
   user: optional(nullable(ProfileSchema)),
+  type: string().default("message"),
   created_at: string(),
   last_updated: string(),
   viewers: array(uuid()),
