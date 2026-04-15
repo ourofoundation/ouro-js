@@ -97,7 +97,13 @@ const PermissionSchema = object({
   last_updated: string(),
 });
 
-const StatusSchema = zodEnum(["queued", "in-progress", "success", "error"]);
+const StatusSchema = zodEnum([
+  "queued",
+  "in-progress",
+  "timed-out",
+  "success",
+  "error",
+]);
 
 const SourceSchema = zodEnum(["web", "api"]);
 

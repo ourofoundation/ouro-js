@@ -1,6 +1,6 @@
 {
   "name": "@ourofoundation/ouro-js",
-  "version": "3.2.2",
+  "version": "3.2.3",
   "description": "Interact with the Ouro platform in browser and node.js environments",
   "module": "./dist/index.js",
   "main": "./dist/index.cjs",
@@ -55,7 +55,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "marked": "^16.0.0",
+    "marked": "^18.0.0",
     "uuidv7": "^1.0.0",
     "zod": "^4.0.5"
   },

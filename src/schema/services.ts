@@ -13,7 +13,7 @@ import {
   boolean
 } from "zod";
 
-import { AssetTypeSchema } from "./common";
+import { AssetTypeSchema, StatusSchema } from "./common";
 import {
   AssetMetadataSchema,
   AssetSchema,
@@ -101,7 +101,7 @@ const ActionSchema = object({
   output_asset: optional(nullable(AssetSchema)),
   webhook_url: optional(nullable(string())),
   webhook_token: optional(nullable(string())),
-  status: zodEnum(["queued", "in-progress", "success", "error", 'done']),
+  status: StatusSchema,
   created_at: string(),
   last_updated: string(),
   started_at: optional(nullable(string())),
