@@ -1,11 +1,77 @@
 import { Content } from "../../schema/posts";
 import { Profile } from "../../schema/users";
 
-interface InlineAssetAttrs {
+export interface DataFilter {
+  column: string;
+  value: string;
+  operator: string;
+  active?: boolean;
+}
+
+export interface DisplayConfig {
+  /** Dataset: ID of a saved visualization to render instead of the default chart. */
+  visualizationId?: string | null;
+  /** Dataset: column filters applied to the data. */
+  filters?: DataFilter[];
+  /** Route: ID of a specific action to preview (status, logs, side-effect assets). */
+  actionId?: string | null;
+  // Future: showForm?: boolean  -- render UseRouteForm inline
+}
+
+/**
+ * Normalize legacy viewMode values to the current set.
+ * "chart" → "preview", "default" → "card", anything else → "card".
+ */
+export function normalizeViewMode(
+  raw: string | undefined | null
+): "card" | "preview" | "list" {
+  if (raw === "default") return "card";
+  if (raw === "chart") return "preview";
+  if (raw === "preview" || raw === "card" || raw === "list") return raw;
+  return "card";
+}
+
+/**
+ * Build a DisplayConfig from node/element attributes, handling the legacy
+ * flat `visualizationId` / `filters` attrs and the new `displayConfig` object.
+ * Prefers values inside `displayConfig` when present.
+ */
+export function resolveDisplayConfig(attrs: {
+  displayConfig?: DisplayConfig | string | null;
+  visualizationId?: string | null;
+  filters?: DataFilter[] | string | null;
+}): DisplayConfig {
+  let base: DisplayConfig = {};
+
+  if (attrs.displayConfig) {
+    base =
+      typeof attrs.displayConfig === "string"
+        ? JSON.parse(attrs.displayConfig)
+        : { ...attrs.displayConfig };
+  }
+
+  // Fall back to legacy flat attrs when displayConfig doesn't carry them
+  if (base.visualizationId === undefined && attrs.visualizationId) {
+    base.visualizationId = attrs.visualizationId;
+  }
+  if (base.filters === undefined && attrs.filters) {
+    const raw = attrs.filters;
+    base.filters =
+      typeof raw === "string" ? JSON.parse(raw) : raw;
+  }
+
+  return base;
+}
+
+export interface InlineAssetAttrs {
   id: string;
   assetType: string;
   viewMode: "card" | "preview" | "list";
+  displayConfig?: DisplayConfig | null;
+  /** @deprecated Use displayConfig.filters */
   filters?: any;
+  /** @deprecated Use displayConfig.visualizationId */
+  visualizationId?: string | null;
   partial?: boolean;
 }
 

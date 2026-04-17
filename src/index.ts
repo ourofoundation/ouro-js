@@ -26,7 +26,12 @@ export { createNameUrlSlug } from "./utils/navigate";
 export { parseMarkdown } from "./utils/air/markdown-parser";
 export {
   type ExtractedContentAsset,
+  type DisplayConfig,
+  type DataFilter,
+  type InlineAssetAttrs,
   getReferencesInContent,
   parseAssetLinkShorthand,
   parseOuroAssetUrl,
+  normalizeViewMode,
+  resolveDisplayConfig,
 } from "./utils/air";
