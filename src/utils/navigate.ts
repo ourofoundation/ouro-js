@@ -22,18 +22,56 @@ const createNameUrlSlug = (name: string) => {
   );
 };
 
+const getEntityName = (asset: any) => {
+  if (asset.org_id === GLOBAL_ORG_ID) return asset.user?.username;
+  if (asset.org_id) return asset.organization?.name;
+  return asset.organization?.name || asset.user?.username;
+};
+
+const missingAssetUrlWarnings = new Set<string>();
+
+const warnMissingAssetUrlData = (asset: any, reason: string) => {
+  const key = `${reason}:${asset?.id || "no-id"}:${asset?.asset_type || "no-type"}`;
+  if (missingAssetUrlWarnings.has(key)) return;
+  missingAssetUrlWarnings.add(key);
+
+  console.warn("[ouro-js] Unable to build asset URL", {
+    reason,
+    id: asset?.id,
+    asset_type: asset?.asset_type,
+    org_id: asset?.org_id,
+    user_id: asset?.user_id,
+    name: asset?.name,
+    name_url_slug: asset?.name_url_slug,
+    organization_name: asset?.organization?.name,
+    username: asset?.user?.username,
+  });
+};
+
 const createUrlSlug = (asset: any) => {
+  if (asset?.slug) {
+    return asset.slug;
+  }
+  if (!asset?.asset_type) {
+    warnMissingAssetUrlData(asset, "missing_asset_type");
+    return "#";
+  }
   if (asset.asset_type === "conversation") {
     return `/conversations/${asset.id}`;
   }
   if (asset.asset_type === "comment") {
     return `/comments/${asset.id}`;
   }
-  const entityName =
-    asset.org_id !== GLOBAL_ORG_ID
-      ? asset.organization.name
-      : asset.user.username;
-  const name = asset.name ? createNameUrlSlug(asset.name) : asset.id;
+  const entityName = getEntityName(asset);
+  const name =
+    asset.name_url_slug || asset.id || (asset.name ? createNameUrlSlug(asset.name) : undefined);
+  if (!entityName || !name) {
+    warnMissingAssetUrlData(
+      asset,
+      !entityName ? "missing_entity_name" : "missing_asset_name"
+    );
+    return "#";
+  }
   const assetType = asset.asset_type;
   return `/${assetType}s/${entityName}/${name}`;
 };
@@ -52,7 +90,10 @@ const getAssetUrl = (
   }
 ) => {
   // const assetType = asset?.asset_type || asset?.assetType;
-  const slug = asset?.slug || createUrlSlug(asset);
+  const slug = createUrlSlug(asset);
+  if (slug === "#") {
+    return slug;
+  }
   const pathPostfix = config?.intent ? `?intent=${config.intent}` : "";
   let url = `${slug}${pathPostfix}`;
   if (config?.filters) {
