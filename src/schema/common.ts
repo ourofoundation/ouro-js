@@ -24,8 +24,6 @@ const AssetTypeSchema = zodEnum([
   "quest",
   "comment",
   "conversation",
-  "blueprint",
-  "replication",
 ]);
 
 const VisibilitySchema = zodEnum([
@@ -62,6 +60,7 @@ const ConnectionTypeSchema = zodEnum([
   "action",
   "component",
   "link",
+  "completion",
 ]);
 
 const ConnectionSchema = object({
