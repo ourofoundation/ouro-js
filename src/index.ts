@@ -11,6 +11,7 @@ export * from "./schema/posts";
 export * from "./schema/comments";
 export * from "./schema/conversations";
 export * from "./schema/datasets";
+export * from "./schema/quests";
 export * from "./schema/notifications";
 export * from "./schema/events";
 export * from "./schema/services";
