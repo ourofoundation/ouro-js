@@ -11,6 +11,7 @@ import {
   nullable,
   union,
   uuid,
+  boolean as zodBoolean,
   enum as zodEnum,
   type ZodType,
 } from "zod";
@@ -22,16 +23,17 @@ import {
   normalizeAssetConfigForParsing,
 } from "./assets";
 import { AssetTypeSchema } from "./common";
+import {
+  KeyedAssetRefsSchema,
+  KeyedAssetInputSchema,
+  QuestSubmissionAssetDeclarationSchema,
+} from "../utils/quest-submission";
 
 // ── Enums ──────────────────────────────────────────────────────────────
 
+/** closable: one active entry per item per user; continuous: unlimited per item */
 const QuestTypeSchema = zodEnum(["closable", "continuous"]);
-const QuestStatusSchema = zodEnum([
-  "draft",
-  "open",
-  "closed",
-  "cancelled",
-]);
+const QuestStatusSchema = zodEnum(["draft", "open", "closed", "cancelled"]);
 
 const QuestItemStatusSchema = zodEnum([
   "pending",
@@ -50,11 +52,7 @@ const EntryEvalStatusSchema = zodEnum([
   "errored",
 ]);
 
-const EntryStatusSchema = zodEnum([
-  "submitted",
-  "accepted",
-  "rejected",
-]);
+const EntryStatusSchema = zodEnum(["submitted", "accepted", "rejected"]);
 
 // ── Content (TipTap) ───────────────────────────────────────────────────
 // Posts/quests share the same rich description shape: { json, text }.
@@ -94,13 +92,31 @@ const QuestItemBaseSchema = object({
   reward_currency: RewardCurrencySchema.default("btc"),
   reward_amount: number().int().nonnegative().default(0),
   child_quest_id: optional(nullable(uuid())),
-  completed_entry_id: optional(nullable(uuid())),
   eval_route_id: optional(nullable(uuid())),
   eval_score_path: optional(nullable(string())),
   eval_pass_min: optional(nullable(number())),
   eval_pass_max: optional(nullable(number())),
-  eval_input_key: optional(nullable(string())),
+  submission_assets: optional(
+    nullable(record(string(), QuestSubmissionAssetDeclarationSchema)),
+  ),
+  eval_static_inputs: optional(nullable(KeyedAssetRefsSchema)),
   notes: optional(nullable(string())),
+  contributor_keys: optional(
+    nullable(
+      array(
+        object({
+          key: string(),
+          required: zodBoolean().default(true),
+          filters: object({
+            assetType: optional(string()),
+            fileType: optional(string()),
+            extensions: optional(array(string())),
+            hasConstraints: zodBoolean().default(false),
+          }),
+        }),
+      ),
+    ),
+  ),
   created_at: string(),
   updated_at: string(),
 });
@@ -133,7 +149,10 @@ const CreateQuestItemObjectSchema = object({
   eval_score_path: optional(nullable(string())),
   eval_pass_min: optional(nullable(number())),
   eval_pass_max: optional(nullable(number())),
-  eval_input_key: optional(nullable(string())),
+  submission_assets: optional(
+    nullable(record(string(), QuestSubmissionAssetDeclarationSchema)),
+  ),
+  eval_static_inputs: optional(nullable(KeyedAssetRefsSchema)),
   notes: optional(nullable(string())),
 });
 
@@ -163,7 +182,7 @@ const QuestSchema = AssetSchema.extend({
       total: number(),
       done: number(),
       remaining: number(),
-    })
+    }),
   ),
 });
 
@@ -220,6 +239,7 @@ const EntrySchema = object({
   item_id: optional(nullable(uuid())),
   asset_id: optional(nullable(uuid())),
   asset_type: optional(nullable(AssetTypeSchema)),
+  assets: optional(nullable(KeyedAssetRefsSchema)),
   description: optional(nullable(ContentSchema)),
   review: optional(nullable(ContentSchema)),
   status: EntryStatusSchema,
@@ -233,9 +253,8 @@ const EntrySchema = object({
 });
 
 const CreateEntrySchema = object({
-  item_id: optional(nullable(uuid())),
-  asset_id: optional(nullable(uuid())),
-  asset_type: optional(nullable(AssetTypeSchema)),
+  item_id: uuid(),
+  assets: optional(nullable(KeyedAssetInputSchema)),
   description: optional(nullable(union([string(), ContentSchema]))),
 });
 
@@ -247,6 +266,9 @@ const ReviewEntrySchema = object({
 // ── Exports ────────────────────────────────────────────────────────────
 
 export {
+  KeyedAssetRefsSchema,
+  KeyedAssetInputSchema,
+  QuestSubmissionAssetDeclarationSchema,
   QuestTypeSchema,
   QuestStatusSchema,
   QuestItemStatusSchema,

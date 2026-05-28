@@ -64,6 +64,48 @@ const UpdateServiceSchema = ServiceSchema.partial()
 
 const ExecutionModeSchema = zodEnum(["sync", "async"]);
 
+// Asset type accepted in keyed `input_assets` / `output_assets` declarations.
+const RouteAssetType = zodEnum(["file", "dataset", "post"]);
+
+// File-type filter accepted on file-input declarations.
+const RouteInputFilter = zodEnum([
+  "audio",
+  "video",
+  "image",
+  "pdf",
+  "3d model",
+  "atomic structure",
+]);
+
+// Shape of a single keyed declaration in `routes.input_assets`. Plural
+// declarations are canonical; the legacy `input_type` and `input_file_*`
+// columns on the route row stay in sync as primary projections.
+const RouteInputAssetDeclarationSchema = object({
+  asset_type: RouteAssetType,
+  primary: optional(boolean()),
+  input_filter: optional(nullable(RouteInputFilter)),
+  file_extensions: optional(nullable(array(string()))),
+  contains_file_extensions: optional(nullable(array(string()))),
+}).catchall(any());
+
+// Shape of a single keyed declaration in `routes.output_assets`.
+const RouteOutputAssetDeclarationSchema = object({
+  asset_type: RouteAssetType,
+  primary: optional(boolean()),
+  file_extensions: optional(nullable(array(string()))),
+  contains_file_extensions: optional(nullable(array(string()))),
+}).catchall(any());
+
+const RouteInputAssetsSchema = record(
+  string(),
+  RouteInputAssetDeclarationSchema
+);
+
+const RouteOutputAssetsSchema = record(
+  string(),
+  RouteOutputAssetDeclarationSchema
+);
+
 const RouteDetailSchema = object({
   id: string(),
   user_id: string(),
@@ -74,13 +116,18 @@ const RouteDetailSchema = object({
   parameters: optional(nullable(array(record(string(), any())))),
   request_body: optional(nullable(record(string(), any()))),
   responses: optional(nullable(array(record(string(), any())))),
-  input_assets: optional(nullable(record(string(), any()))),
-  input_type: optional(nullable(zodEnum(["file", "dataset", "post"]))),
-  input_filter: optional(nullable(zodEnum(["audio", "video", "image", "pdf", "3d model", "atomic structure"]))),
+  // Canonical plural input declarations keyed by request body field name.
+  input_assets: optional(nullable(RouteInputAssetsSchema)),
+  // Legacy primary projection — kept synchronized with `input_assets` for
+  // older clients, indexing, and quick asset-type lookups.
+  input_type: optional(nullable(RouteAssetType)),
+  input_filter: optional(nullable(RouteInputFilter)),
   input_file_extension: optional(nullable(string())),
   input_file_extensions: optional(nullable(array(string()))),
-  output_type: optional(nullable(zodEnum(["file", "dataset", "post"]))),
-  output_assets: optional(nullable(record(string(), any()))),
+  // Canonical plural output declarations keyed by response body field name.
+  output_assets: optional(nullable(RouteOutputAssetsSchema)),
+  // Legacy primary projection — kept synchronized with `output_assets`.
+  output_type: optional(nullable(RouteAssetType)),
   output_file_extension: optional(nullable(string())),
   security: optional(nullable(record(string(), any()))),
   rate_limit: optional(nullable(number())),
@@ -147,6 +194,10 @@ const ActionSchema = object({
 
 export {
   RouteSchema,
+  RouteInputAssetDeclarationSchema,
+  RouteOutputAssetDeclarationSchema,
+  RouteInputAssetsSchema,
+  RouteOutputAssetsSchema,
   ServiceSchema,
   CreateServiceSchema,
   UpdateServiceSchema,
@@ -158,6 +209,10 @@ export type Service = z.infer<typeof ServiceSchema>;
 export type Route = z.infer<typeof RouteSchema>;
 export type RouteDetail = z.infer<typeof RouteDetailSchema>;
 export type RouteMetrics = z.infer<typeof RouteMetricsSchema>;
+export type RouteInputAssetDeclaration = z.infer<typeof RouteInputAssetDeclarationSchema>;
+export type RouteOutputAssetDeclaration = z.infer<typeof RouteOutputAssetDeclarationSchema>;
+export type RouteInputAssets = z.infer<typeof RouteInputAssetsSchema>;
+export type RouteOutputAssets = z.infer<typeof RouteOutputAssetsSchema>;
 export type ExecutionMode = z.infer<typeof ExecutionModeSchema>;
 export type AuthType = z.infer<typeof AuthType>;
 export type Action = z.infer<typeof ActionSchema>;

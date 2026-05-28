@@ -25,6 +25,24 @@ export { createUrlSlug } from "./utils/navigate";
 export { createNameUrlSlug } from "./utils/navigate";
 export { parseMarkdown } from "./utils/air/markdown-parser";
 export {
+  KeyedAssetRefsSchema,
+  KeyedAssetInputSchema,
+  QuestSubmissionAssetDeclarationSchema,
+  getSubmissionAssetShape,
+  materializeContributorSubmissionAssets,
+  declarationToPickerFilters,
+  assetMatchesDeclaration,
+  getPrimaryAssetRef,
+  getPrimaryDeclarationKey,
+  toRouteInputAssets,
+  getRouteInputDeclarationsFromRoute,
+  declarationToSubmissionDeclaration,
+  type KeyedAssetRefs,
+  type KeyedAssetInput,
+  type QuestSubmissionAssetDeclaration,
+  type AssetDeclarationPickerFilters,
+} from "./utils/quest-submission";
+export {
   type ExtractedContentAsset,
   type DisplayConfig,
   type DataFilter,
