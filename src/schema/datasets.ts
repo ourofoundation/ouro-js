@@ -6,6 +6,8 @@ import {
   array,
   literal,
   record,
+  optional,
+  nullable,
   type z,
   any,
   enum as zodEnum
@@ -17,6 +19,7 @@ import {
   AssetMetadataSchema,
   normalizeAssetConfigForParsing,
 } from "./assets";
+import { AssetTypeSchema } from "./common";
 
 const DatasetFromFileMetadataSchema = object({
   type: string(),
@@ -28,11 +31,62 @@ const DatasetFromFileMetadataSchema = object({
   bucket: zodEnum(["public-files", "files"]),
 });
 
+/**
+ * Per-column asset reference declarations.
+ *
+ * A column becomes an asset reference when the backend adds a real Postgres FK
+ * to public.assets(id). The optional asset_type refines validation/display.
+ */
+const DatasetAssetRefsSchema = record(
+  string(),
+  object({
+    asset_type: optional(AssetTypeSchema),
+  })
+);
+
 const BaseDatasetMetadataSchema = object({
   table_name: string(),
   schema: literal("datasets").default("datasets"),
   columns: array(string()),
+  asset_refs: optional(nullable(DatasetAssetRefsSchema)),
 });
+
+/**
+ * A single column from GET /datasets/:id/schema, enriched server-side.
+ *
+ * The FK fields come straight from get_table_schema. `semantic_type` is pure
+ * inference: "asset_ref" when the column has an FK to public.assets. The
+ * optional `asset_type` is the declared target-type hint from
+ * metadata.asset_refs (display + soft validation only).
+ */
+const EnrichedDatasetSchemaFieldSchema = object({
+  column_name: string(),
+  data_type: string(),
+  fk_constraint_name: optional(nullable(string())),
+  foreign_table_schema: optional(nullable(string())),
+  foreign_table_name: optional(nullable(string())),
+  foreign_column_name: optional(nullable(string())),
+  semantic_type: optional(nullable(literal("asset_ref"))),
+  asset_type: optional(nullable(AssetTypeSchema)),
+});
+
+/**
+ * A resolved asset reference returned in the `resolved_asset_refs` sidecar of
+ * GET /datasets/:id/data?resolve_asset_refs=true. Reuses the platform-wide
+ * { asset_id, asset_type } vocabulary (see KeyedAssetRefsSchema).
+ */
+const ResolvedAssetRefSchema = object({
+  asset_id: uuid(),
+  asset_type: AssetTypeSchema,
+  name: nullable(string()),
+  web_url: nullable(string()),
+});
+
+/** column -> (referenced uuid -> resolved asset). */
+const ResolvedAssetRefsSchema = record(
+  string(),
+  record(string(), ResolvedAssetRefSchema)
+);
 
 const DatasetMetadataSchema = BaseDatasetMetadataSchema.extend(
   AssetMetadataSchema.partial().shape
@@ -70,6 +124,7 @@ const updateDatasetSchema = DatasetSchema.partial()
     user: true,
     team: true,
     slug: true,
+    is_pinned_in_team: true,
   })
   .extend({
     asset_type: literal("dataset").default("dataset"),
@@ -82,8 +137,18 @@ export {
   CreateDatasetFromFileSchema,
   CreateDatasetFromSchemaSchema,
   updateDatasetSchema,
+  DatasetAssetRefsSchema,
+  EnrichedDatasetSchemaFieldSchema,
+  ResolvedAssetRefSchema,
+  ResolvedAssetRefsSchema,
 };
 export type Dataset = z.infer<typeof DatasetSchema>;
 export type CreateFromFileDataset = z.infer<typeof CreateDatasetFromFileSchema>;
 export type CreateFromSchemaDataset = z.infer<typeof CreateDatasetFromSchemaSchema>;
 export type UpdateDataset = z.infer<typeof updateDatasetSchema>;
+export type DatasetAssetRefs = z.infer<typeof DatasetAssetRefsSchema>;
+export type EnrichedDatasetSchemaField = z.infer<
+  typeof EnrichedDatasetSchemaFieldSchema
+>;
+export type ResolvedAssetRef = z.infer<typeof ResolvedAssetRefSchema>;
+export type ResolvedAssetRefs = z.infer<typeof ResolvedAssetRefsSchema>;

@@ -90,7 +90,6 @@ const ReadPostSchema = PostSchema.extend({
   commentCount: number().default(0),
   // We have this on asset now
   // parent: ConnectionSchema.optional().nullable(),
-  pinned: boolean().default(false),
 });
 
 const ReadPostsSchema = array(ReadPostSchema);

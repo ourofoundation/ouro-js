@@ -7,6 +7,7 @@ import {
   enum as zodEnum,
   nullable,
   optional,
+  boolean,
   record,
   type z,
   any
@@ -90,6 +91,7 @@ const AssetSchema = object({
   preview: optional(nullable(array(record(string(), any())))),
   state: StatusSchema,
   source: SourceSchema,
+  is_pinned_in_team: optional(boolean().default(false)),
   created_at: string(),
   last_updated: string(),
 });
@@ -102,6 +104,7 @@ const CreateAssetSchema = AssetSchema.partial()
     license: true,
     team: true,
     slug: true,
+    is_pinned_in_team: true,
   })
   .extend({
     id: uuid().default(() => uuidv7()),
@@ -128,6 +131,7 @@ const UpdateAssetSchema = AssetSchema.partial().omit({
   organization: true,
   team: true,
   slug: true,
+  is_pinned_in_team: true,
 }).transform((value) => normalizeAssetConfigForParsing(value));
 
 export {
