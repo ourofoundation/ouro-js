@@ -219,6 +219,7 @@ const UpdateQuestSchema = QuestSchema.partial()
     slug: true,
     items: true,
     progress: true,
+    is_pinned_in_team: true,
   })
   .extend({
     asset_type: literal("quest").default("quest"),

@@ -73,6 +73,7 @@ const updateFileSchema = FileSchema.partial()
     user: true,
     team: true,
     slug: true,
+    is_pinned_in_team: true,
   })
   .extend({
     last_updated: string().default(() => new Date().toISOString()),
