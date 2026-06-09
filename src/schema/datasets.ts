@@ -44,11 +44,26 @@ const DatasetAssetRefsSchema = record(
   })
 );
 
+/**
+ * Per-column enum declarations.
+ *
+ * Enum columns are stored as ordinary dataset columns plus a Postgres CHECK
+ * constraint. The values are surfaced in schema reads so agents can query with
+ * known categorical values.
+ */
+const DatasetEnumColumnsSchema = record(
+  string(),
+  object({
+    values: array(string()),
+  })
+);
+
 const BaseDatasetMetadataSchema = object({
   table_name: string(),
   schema: literal("datasets").default("datasets"),
   columns: array(string()),
   asset_refs: optional(nullable(DatasetAssetRefsSchema)),
+  enum_columns: optional(nullable(DatasetEnumColumnsSchema)),
 });
 
 /**
@@ -57,7 +72,8 @@ const BaseDatasetMetadataSchema = object({
  * The FK fields come straight from get_table_schema. `semantic_type` is pure
  * inference: "asset_ref" when the column has an FK to public.assets. The
  * optional `asset_type` is the declared target-type hint from
- * metadata.asset_refs (display + soft validation only).
+ * metadata.asset_refs (display + soft validation only). `semantic_type: "enum"`
+ * comes from metadata.enum_columns and exposes its known values.
  */
 const EnrichedDatasetSchemaFieldSchema = object({
   column_name: string(),
@@ -66,8 +82,9 @@ const EnrichedDatasetSchemaFieldSchema = object({
   foreign_table_schema: optional(nullable(string())),
   foreign_table_name: optional(nullable(string())),
   foreign_column_name: optional(nullable(string())),
-  semantic_type: optional(nullable(literal("asset_ref"))),
+  semantic_type: optional(nullable(zodEnum(["asset_ref", "enum"]))),
   asset_type: optional(nullable(AssetTypeSchema)),
+  enum_values: optional(nullable(array(string()))),
 });
 
 /**
@@ -138,6 +155,7 @@ export {
   CreateDatasetFromSchemaSchema,
   updateDatasetSchema,
   DatasetAssetRefsSchema,
+  DatasetEnumColumnsSchema,
   EnrichedDatasetSchemaFieldSchema,
   ResolvedAssetRefSchema,
   ResolvedAssetRefsSchema,
@@ -147,6 +165,7 @@ export type CreateFromFileDataset = z.infer<typeof CreateDatasetFromFileSchema>;
 export type CreateFromSchemaDataset = z.infer<typeof CreateDatasetFromSchemaSchema>;
 export type UpdateDataset = z.infer<typeof updateDatasetSchema>;
 export type DatasetAssetRefs = z.infer<typeof DatasetAssetRefsSchema>;
+export type DatasetEnumColumns = z.infer<typeof DatasetEnumColumnsSchema>;
 export type EnrichedDatasetSchemaField = z.infer<
   typeof EnrichedDatasetSchemaFieldSchema
 >;
