@@ -1,6 +1,7 @@
 import {
   object,
   string,
+  number,
   uuid,
   array,
   type z,
@@ -63,6 +64,8 @@ const UpdateConversationSchema = BaseCreateConversationSchema.omit({
 const MessageSchema = object({
   id: uuid(),
   conversation_id: uuid(),
+  turn_id: uuid(),
+  seq: number(),
   user_id: uuid(),
   user: optional(nullable(ProfileSchema)),
   type: string().default("message"),

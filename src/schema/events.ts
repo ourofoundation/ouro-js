@@ -67,6 +67,14 @@ export const WEBHOOK_EVENTS = {
     userSubscribable: true,
     scope: "conversation",
   },
+  // Control signal asking an agent to stop its in-flight response for a
+  // conversation. Delivered to every webhook of the recipient regardless of
+  // per-event subscriptions (agents shouldn't opt in to being interruptible).
+  interrupt: {
+    label: "Interrupts",
+    userSubscribable: false,
+    scope: "conversation",
+  },
 } as const satisfies Record<string, WebhookEventDefinition>;
 
 export type WebhookEventType = keyof typeof WEBHOOK_EVENTS;
