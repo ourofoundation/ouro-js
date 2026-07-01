@@ -12,133 +12,6 @@ function mathSpanHtml(latex: string, displayMode: boolean): string {
   return `<span data-latex="${escapeHtmlAttr(latex)}" data-display-mode="${displayMode}"></span>`;
 }
 
-/**
- * Detect whether the text between `$…$` is a currency amount rather than math.
- *
- * Covers bare numbers ($50, $3.50, $1,000), numbers with magnitude suffixes
- * ($50K, $1.5M), and numeric-only fragments produced when a price range like
- * "$50-$100" is split at the inner `$` (content = "50-").
- *
- * If the content starts with a digit but also contains single-letter tokens
- * (likely math variables such as x, n, k) or LaTeX commands, it is NOT
- * treated as currency so real math like `$2x + 3$` still renders.
- */
-function isLikelyCurrency(s: string): boolean {
-  if (!/^\d/.test(s)) return false;
-
-  if (/^[\d,]+(\.\d+)?$/.test(s)) return true;
-  if (/^[\d,]+(\.\d+)?[KkMmBbTt]$/.test(s)) return true;
-
-  if (/\\[a-zA-Z]/.test(s)) return false;
-
-  if (!/[a-zA-Z\\{}]/.test(s)) return true;
-
-  const hasSingleLetterToken = /(?:^|[^a-zA-Z])[a-zA-Z](?:[^a-zA-Z]|$)/.test(s);
-  if (!hasSingleLetterToken) return true;
-
-  return false;
-}
-
-/**
- * The opening `$` in `src` may start inline math only when:
- *  - it is a single `$` (not `$$`),
- *  - the next character is non-whitespace and not another `$`, and
- *  - when the next character is a digit, the captured segment (up to the
- *    closing `$`) contains evidence of math (a letter, backslash, or brace)
- *    rather than just a currency amount.
- */
-function dollarInlineOpenOk(src: string): boolean {
-  if (!src.startsWith("$") || src.startsWith("$$")) return false;
-  const rest = src.slice(1);
-  const c = rest[0];
-  if (!c || c === " " || c === "\t" || c === "$") return false;
-  if (!/\d/.test(c)) return true;
-
-  const nextDollar = rest.indexOf("$");
-  if (nextDollar < 0) return false;
-  const segment = rest.slice(0, nextDollar);
-  return /[a-zA-Z\\{]/.test(segment);
-}
-
-/** Closing `$` for inline math at start of `src` (which must begin with a single `$`). */
-function endIndexOfDollarInline(src: string): number {
-  let i = 1;
-  while (i < src.length) {
-    const ch = src[i];
-    if (ch === "\n") return -1;
-    if (ch === "\\") {
-      i += 2;
-      continue;
-    }
-    if (ch === "$") {
-      if (src[i + 1] === "$") {
-        i += 2;
-        continue;
-      }
-      return i;
-    }
-    i++;
-  }
-  return -1;
-}
-
-const katexDollarBlock = {
-  name: "katexDollarBlock",
-  level: "block",
-  start(src: string) {
-    const match = src.match(/\$\$/);
-    return match ? match.index : undefined;
-  },
-  end(src: string) {
-    const match = src.match(/\$\$/);
-    return match ? (match.index ?? 0) + 2 : undefined;
-  },
-  tokenizer(src: string, tokens: any) {
-    const rule = /^\$\$([\s\S]*?)\$\$/;
-    const match = rule.exec(src);
-    if (match) {
-      return {
-        type: "katexDollarBlock",
-        raw: match[0],
-        latex: match[1].trim(),
-        displayMode: true,
-      };
-    }
-  },
-  renderer(token: any) {
-    return mathSpanHtml(token.latex, true);
-  },
-};
-
-const katexDollarInline = {
-  name: "katexDollarInline",
-  level: "inline",
-  start(src: string) {
-    const match = src.match(/\$(?!\$)/);
-    return match ? match.index : undefined;
-  },
-  end(src: string) {
-    const match = src.match(/\$(?!\$)/);
-    return match ? (match.index ?? 0) + 1 : undefined;
-  },
-  tokenizer(src: string, tokens: any) {
-    if (!dollarInlineOpenOk(src)) return;
-    const close = endIndexOfDollarInline(src);
-    if (close < 0) return;
-    const latex = src.slice(1, close).trim();
-    if (latex.length === 0 || isLikelyCurrency(latex)) return;
-    return {
-      type: "katexDollarInline",
-      raw: src.slice(0, close + 1),
-      latex,
-      displayMode: false,
-    };
-  },
-  renderer(token: any) {
-    return mathSpanHtml(token.latex, false);
-  },
-};
-
 const katexBlockParser = {
   name: "katexBlock",
   level: "block",
@@ -283,9 +156,7 @@ marked.use({
   extensions: [
     assetComponentExtension,
     userMentionExtension,
-    katexDollarBlock,
     katexBlockParser,
-    katexDollarInline,
     katexInlineParser,
   ],
   renderer: {
