@@ -36,6 +36,8 @@ const ConversationMetadataSchema = BaseConversationMetadataSchema.extend(
 
 const ConversationSchema = AssetSchema.extend({
   asset_type: AssetTypeSchema.default("conversation"),
+  // Agents often name conversations after the first exchange; allow null until then.
+  name: nullable(string()),
   metadata: ConversationMetadataSchema,
   users: optional(nullable(array(ProfileSchema))),
 });
@@ -44,6 +46,13 @@ const BaseCreateConversationSchema = CreateAssetSchema.extend({
   asset_type: literal("conversation").default("conversation"),
   monetization: MonetizationSchema.default("none"),
   visibility: VisibilitySchema.default("private"),
+  // Optional like posts — leave blank and let a responding agent name it.
+  name: string()
+    .optional()
+    .nullable()
+    .default("")
+    .transform((x) => x?.trim())
+    .transform((x) => x || null),
   metadata: ConversationMetadataSchema,
 });
 
