@@ -15,7 +15,8 @@ export interface DisplayConfig {
   filters?: DataFilter[];
   /** Route: ID of a specific action to preview (status, logs, side-effect assets). */
   actionId?: string | null;
-  // Future: showForm?: boolean  -- render UseRouteForm inline
+  /** Route: author-provided defaults for an interactive route form. */
+  defaultValues?: Record<string, unknown>;
 }
 
 /**
@@ -24,10 +25,16 @@ export interface DisplayConfig {
  */
 export function normalizeViewMode(
   raw: string | undefined | null
-): "card" | "preview" | "list" {
+): "card" | "preview" | "interactive" | "list" {
   if (raw === "default") return "card";
   if (raw === "chart") return "preview";
-  if (raw === "preview" || raw === "card" || raw === "list") return raw;
+  if (
+    raw === "preview" ||
+    raw === "interactive" ||
+    raw === "card" ||
+    raw === "list"
+  )
+    return raw;
   return "card";
 }
 
@@ -66,7 +73,7 @@ export function resolveDisplayConfig(attrs: {
 export interface InlineAssetAttrs {
   id: string;
   assetType: string;
-  viewMode: "card" | "preview" | "list";
+  viewMode: "card" | "preview" | "interactive" | "list";
   displayConfig?: DisplayConfig | null;
   /** @deprecated Use displayConfig.filters */
   filters?: any;

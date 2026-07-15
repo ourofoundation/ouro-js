@@ -173,8 +173,9 @@ const QuestSpecificsSchema = object({
 const QuestSchema = AssetSchema.extend({
   asset_type: literal("quest").default("quest"),
   metadata: optional(nullable(AssetMetadataSchema.partial())),
-  // `read /quests/:id` returns the quest specifics nested under `quest`
-  // and hoists items to the top level for convenience.
+  // List and detail both nest specifics under `quest`. Detail also hoists
+  // full items to the top level. Progress (counts + bar segments) is always
+  // top-level `progress` on list and detail responses.
   quest: optional(QuestSpecificsSchema.partial()),
   items: optional(array(QuestItemSchema.partial())),
   progress: optional(
@@ -182,7 +183,19 @@ const QuestSchema = AssetSchema.extend({
       total: number(),
       done: number(),
       remaining: number(),
-    }),
+      // Lightweight per-item segments for progress bars (list + detail).
+      items: optional(
+        array(
+          object({
+            id: string(),
+            status: QuestItemStatusSchema,
+            waiting_on: optional(nullable(string())),
+            waiting_until: optional(nullable(string())),
+            waiting_check_every: optional(nullable(string())),
+          }).partial()
+        )
+      ),
+    })
   ),
 });
 
