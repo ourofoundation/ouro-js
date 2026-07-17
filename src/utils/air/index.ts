@@ -100,7 +100,7 @@ const UUID_RE =
 
 /** Shorthand link hrefs: `post:<uuid>`, `file:<uuid>`, … (preferred over legacy `asset:<uuid>`). */
 const TYPED_ASSET_LINK_RE = new RegExp(
-  `^(post|dataset|file|service|route):(${UUID_RE})$`,
+  `^(post|dataset|file|service|route|quest):(${UUID_RE})$`,
   "i"
 );
 
@@ -113,6 +113,7 @@ const VALID_ASSET_TYPES = new Set([
   "file",
   "service",
   "route",
+  "quest",
 ]);
 
 /**
