@@ -181,7 +181,7 @@ const QuestSchema = AssetSchema.extend({
   progress: optional(
     object({
       total: number(),
-      done: number(),
+      resolved: number(),
       remaining: number(),
       // Lightweight per-item segments for progress bars (list + detail).
       items: optional(
