@@ -118,7 +118,8 @@ const AssetSchema = object({
   stripe_price_id: optional(nullable(string())),
   stripe_meter_id: optional(nullable(string())),
   metadata: optional(nullable(AssetMetadataSchema)),
-  attribution: optional(nullable(AttributionSchema)),
+  // NOT NULL in DB; always present after 20260720_assets_attribution.
+  attribution: AttributionSchema,
   preview: optional(nullable(array(record(string(), any())))),
   state: StatusSchema,
   source: SourceSchema,
@@ -126,6 +127,8 @@ const AssetSchema = object({
   created_at: string(),
   last_updated: string(),
 });
+
+const DEFAULT_ATTRIBUTION = { originality: "original" as const };
 
 const CreateAssetSchema = AssetSchema.partial()
   .omit({
@@ -150,6 +153,11 @@ const CreateAssetSchema = AssetSchema.partial()
     state: StatusSchema.optional().default("success"),
     source: SourceSchema.default("web"),
     visibility: VisibilitySchema.optional().default("public"),
+    // Column is NOT NULL; coerce omitted/null so create_asset_with_content
+    // never inserts an explicit null (which bypasses the DB default).
+    attribution: optional(nullable(AttributionSchema)).transform((value) =>
+      AttributionSchema.parse(value ?? DEFAULT_ATTRIBUTION)
+    ),
     created_at: string().default(() => new Date().toISOString()),
     last_updated: string().default(() => new Date().toISOString()),
   });
@@ -173,6 +181,7 @@ export {
   AssetSchema,
   CreateAssetSchema,
   UpdateAssetSchema,
+  DEFAULT_ATTRIBUTION,
   normalizeAssetConfigForParsing,
 };
 export type AssetMetadata = z.infer<typeof AssetMetadataSchema>;

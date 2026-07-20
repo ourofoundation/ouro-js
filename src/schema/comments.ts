@@ -11,7 +11,12 @@ import {
   nullable
 } from "zod";
 
-import { AssetSchema, normalizeAssetConfigForParsing } from "./assets";
+import {
+  AssetSchema,
+  AttributionSchema,
+  DEFAULT_ATTRIBUTION,
+  normalizeAssetConfigForParsing,
+} from "./assets";
 
 const CommentSchema = AssetSchema.extend({
   asset_type: literal("comment").default("comment"),
@@ -34,6 +39,9 @@ const CreateCommentSchema = CommentSchema.partial()
     asset_type: literal("comment").default("comment"),
     id: string().default(() => uuidv7()),
     name: string().default(""),
+    attribution: optional(nullable(AttributionSchema)).transform((value) =>
+      AttributionSchema.parse(value ?? DEFAULT_ATTRIBUTION)
+    ),
     created_at: string().default(() => new Date().toISOString()),
     last_updated: string().default(() => new Date().toISOString()),
   })
