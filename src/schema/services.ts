@@ -20,6 +20,7 @@ import {
   CreateAssetSchema,
   normalizeAssetConfigForParsing,
 } from "./assets";
+import { FILE_FILTERS } from "../utils/files";
 
 const AuthType = zodEnum(["Personal Access Token", "Ouro", "None", "OAuth 2.0"]);
 
@@ -69,14 +70,7 @@ const ExecutionModeSchema = zodEnum(["sync", "async"]);
 const RouteAssetType = zodEnum(["file", "dataset", "post"]);
 
 // File-type filter accepted on file-input declarations.
-const RouteInputFilter = zodEnum([
-  "audio",
-  "video",
-  "image",
-  "pdf",
-  "3d model",
-  "atomic structure",
-]);
+const RouteInputFilter = zodEnum(FILE_FILTERS);
 
 // Shape of a single keyed declaration in `routes.input_assets`. Plural
 // declarations are canonical; the legacy `input_type` and `input_file_*`

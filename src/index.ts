@@ -20,6 +20,17 @@ export * from "./schema/tags";
 
 // Utils - exported individually for better tree-shaking
 export { filterListToString } from "./utils/dataset";
+export {
+  FILE_FILTERS,
+  fileTypes,
+  getFileClassification,
+  getFileFilterLabel,
+  normalizeExtension,
+  getExtensionFromFileName,
+  getExtensionFromMimeType,
+  getSafeFileExtension,
+  type FileFilter,
+} from "./utils/files";
 export { getAssetUrl } from "./utils/navigate";
 export { createUrlSlug } from "./utils/navigate";
 export { createNameUrlSlug } from "./utils/navigate";

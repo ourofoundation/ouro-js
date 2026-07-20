@@ -41,15 +41,45 @@ const normalizeAssetConfigForParsing = <T extends AssetConfigInput>(
   return input;
 };
 
+/** Type-specific / incidental metadata only (not attribution). */
 const AssetMetadataSchema = object({
-  doi_url: optional(nullable(string())),
-  external_url: optional(nullable(string())),
-  paper_url: optional(nullable(string())),
-  github_url: optional(nullable(string())),
-  originality: zodEnum(["original", "derivative", "third-party"]),
   source: optional(nullable(string())),
   /** When present on a comment, the id of the comment the user directly replied to (for reply-to-reply; parent_id is the top-level comment). */
   reply_to_comment_id: optional(nullable(string())),
+})
+
+const RelationTypeSchema = zodEnum([
+  "IsSupplementTo",
+  "IsDerivedFrom",
+  "References",
+  "IsVariantFormOf",
+  "IsIdenticalTo",
+])
+
+const CitationSchema = object({
+  doi: optional(nullable(string())),
+  title: optional(nullable(string())),
+  authors: optional(nullable(array(string()))),
+  year: optional(nullable(number())),
+  venue: optional(nullable(string())),
+  url: optional(nullable(string())),
+  bibtex: optional(nullable(string())),
+  source: optional(nullable(string())),
+})
+
+/** Provenance, related-work citation, and (later) this asset's minted DOI. */
+const AttributionSchema = object({
+  originality: optional(
+    zodEnum(["original", "derivative", "third-party"])
+  ).default("original"),
+  external_url: optional(nullable(string())),
+  github_url: optional(nullable(string())),
+  paper_url: optional(nullable(string())),
+  doi_url: optional(nullable(string())),
+  citation: optional(nullable(CitationSchema)),
+  relation_type: optional(nullable(RelationTypeSchema)),
+  /** This asset's DOI — reserved for minting; never the related paper's DOI. */
+  doi: optional(nullable(string())),
 })
 
 const AssetSchema = object({
@@ -88,6 +118,7 @@ const AssetSchema = object({
   stripe_price_id: optional(nullable(string())),
   stripe_meter_id: optional(nullable(string())),
   metadata: optional(nullable(AssetMetadataSchema)),
+  attribution: optional(nullable(AttributionSchema)),
   preview: optional(nullable(array(record(string(), any())))),
   state: StatusSchema,
   source: SourceSchema,
@@ -136,12 +167,18 @@ const UpdateAssetSchema = AssetSchema.partial().omit({
 
 export {
   AssetMetadataSchema,
+  AttributionSchema,
+  CitationSchema,
+  RelationTypeSchema,
   AssetSchema,
   CreateAssetSchema,
   UpdateAssetSchema,
   normalizeAssetConfigForParsing,
 };
 export type AssetMetadata = z.infer<typeof AssetMetadataSchema>;
+export type Attribution = z.infer<typeof AttributionSchema>;
+export type Citation = z.infer<typeof CitationSchema>;
+export type RelationType = z.infer<typeof RelationTypeSchema>;
 export type Asset = z.infer<typeof AssetSchema>;
 export type CreateAsset = z.infer<typeof CreateAssetSchema>;
 export type UpdateAsset = z.infer<typeof UpdateAssetSchema>;
