@@ -57,6 +57,11 @@ export const WEBHOOK_EVENTS = {
     userSubscribable: true,
     scope: "asset",
   },
+  "file.uploaded": {
+    label: "File uploads",
+    userSubscribable: true,
+    scope: "asset",
+  },
   "new-conversation": {
     label: "Conversations",
     userSubscribable: true,
