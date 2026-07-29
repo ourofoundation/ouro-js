@@ -18,6 +18,8 @@ const ProfileSchema = object({
   user_id: uuid(),
   username: optional(nullable(string())),
   name: optional(nullable(string())),
+  first_name: optional(nullable(string())),
+  last_name: optional(nullable(string())),
   avatar_path: optional(nullable(string())),
   bio: optional(nullable(string())),
   is_provisioned: optional(boolean()),
