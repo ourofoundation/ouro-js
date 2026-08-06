@@ -1,6 +1,8 @@
 // Core schemas that are commonly used
 export * from "./schema/common";
 export * from "./schema/assets";
+export * from "./schema/asset-filters";
+export * from "./schema/content-refs";
 
 // Feature-specific schemas
 export * from "./schema/users";
@@ -20,6 +22,10 @@ export * from "./schema/tags";
 
 // Utils - exported individually for better tree-shaking
 export { filterListToString } from "./utils/dataset";
+export {
+  toAssetSearchFilters,
+  toAssetMetadataFilters,
+} from "./utils/asset-filters";
 export {
   FILE_FILTERS,
   fileTypes,
@@ -55,10 +61,12 @@ export {
 } from "./utils/quest-submission";
 export {
   type ExtractedContentAsset,
+  type ExtractedContentAction,
   type DisplayConfig,
   type DataFilter,
   type InlineAssetAttrs,
   getReferencesInContent,
+  parseActionLinkShorthand,
   parseAssetLinkShorthand,
   parseOuroAssetUrl,
   normalizeViewMode,

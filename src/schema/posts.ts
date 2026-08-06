@@ -21,6 +21,8 @@ import {
   normalizeAssetConfigForParsing,
 } from "./assets";
 import { AssetTypeSchema } from "./common";
+import { ContentActionRefSchema } from "./content-refs";
+import { ProfileSchema } from "./users";
 
 const TipTapNode: ZodType<any> = lazy(() =>
   object({
@@ -88,6 +90,10 @@ const ReadPostSchema = PostSchema.extend({
   reactions: array(record(string(), any())).default([]),
   views: number().default(0),
   commentCount: number().default(0),
+  // Resolved from content embeds / links at read time
+  assets: optional(nullable(array(AssetSchema.partial()))),
+  users: optional(nullable(array(ProfileSchema.partial()))),
+  actions: optional(nullable(array(ContentActionRefSchema))),
   // We have this on asset now
   // parent: ConnectionSchema.optional().nullable(),
 });

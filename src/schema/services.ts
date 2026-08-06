@@ -13,13 +13,14 @@ import {
   boolean
 } from "zod";
 
-import { AssetTypeSchema, StatusSchema } from "./common";
+import { AssetTypeSchema, HttpMethodSchema, StatusSchema } from "./common";
 import {
   AssetMetadataSchema,
   AssetSchema,
   CreateAssetSchema,
   normalizeAssetConfigForParsing,
 } from "./assets";
+import { ProfileSchema } from "./users";
 import { FILE_FILTERS } from "../utils/files";
 
 const AuthType = zodEnum(["Personal Access Token", "Ouro", "None", "OAuth 2.0"]);
@@ -106,7 +107,7 @@ const RouteDetailSchema = object({
   user_id: string(),
   service_id: string(),
   path: string(),
-  method: zodEnum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
+  method: HttpMethodSchema,
   summary: optional(nullable(string())),
   parameters: optional(nullable(array(record(string(), any())))),
   request_body: optional(nullable(record(string(), any()))),
@@ -187,6 +188,62 @@ const ActionSchema = object({
   finished_at: optional(nullable(string())),
 });
 
+/**
+ * Row from `action_assets` after `prepareActionResponse` splits by direction.
+ * Nested `asset` may briefly be null under RLS / replication lag.
+ */
+const ActionAssetRefSchema = object({
+  name: string(),
+  asset_id: optional(nullable(uuid())),
+  asset_type: optional(AssetTypeSchema),
+  is_primary: optional(boolean()),
+  asset: optional(nullable(AssetSchema.partial())),
+});
+
+/** Joined route asset on action reads (not a full Route). */
+const ReadActionRouteSchema = AssetSchema.partial().extend({
+  route: optional(
+    nullable(
+      object({
+        output_type: optional(nullable(AssetTypeSchema)),
+        output_assets: optional(nullable(any())),
+        output_file_extension: optional(nullable(string())),
+        input_assets: optional(nullable(any())),
+      })
+    )
+  ),
+});
+
+const ActionUsageRecordSchema = object({
+  id: uuid(),
+  total_cents: optional(nullable(number())),
+  unit_cost_cents: optional(nullable(number())),
+  quantity: optional(nullable(number())),
+  cost_unit: optional(nullable(string())),
+  status: optional(nullable(string())),
+  stripe_invoice_id: optional(nullable(string())),
+  created_at: optional(string()),
+});
+
+const ActionBtcChargeSchema = object({
+  id: uuid(),
+  type: optional(nullable(string())),
+  value: optional(nullable(number())),
+  status: optional(nullable(string())),
+  metadata: optional(nullable(record(string(), any()))),
+  created_at: optional(string()),
+});
+
+/** Action as returned from read APIs, with joins and split action_assets. */
+const ReadActionSchema = ActionSchema.extend({
+  user: optional(nullable(ProfileSchema.partial())),
+  route: optional(nullable(ReadActionRouteSchema)),
+  input_assets: optional(nullable(array(ActionAssetRefSchema))),
+  output_assets: optional(nullable(array(ActionAssetRefSchema))),
+  usage_record: optional(nullable(ActionUsageRecordSchema)),
+  btc_charges: optional(nullable(array(ActionBtcChargeSchema))),
+});
+
 export {
   RouteSchema,
   RouteInputAssetDeclarationSchema,
@@ -197,6 +254,9 @@ export {
   CreateServiceSchema,
   UpdateServiceSchema,
   ActionSchema,
+  ActionAssetRefSchema,
+  ReadActionRouteSchema,
+  ReadActionSchema,
   RouteMetricsSchema,
   ExecutionModeSchema,
 };
@@ -211,3 +271,6 @@ export type RouteOutputAssets = z.infer<typeof RouteOutputAssetsSchema>;
 export type ExecutionMode = z.infer<typeof ExecutionModeSchema>;
 export type AuthType = z.infer<typeof AuthType>;
 export type Action = z.infer<typeof ActionSchema>;
+export type ActionAssetRef = z.infer<typeof ActionAssetRefSchema>;
+export type ReadActionRoute = z.infer<typeof ReadActionRouteSchema>;
+export type ReadAction = z.infer<typeof ReadActionSchema>;

@@ -13,6 +13,7 @@ import {
 } from "zod";
 
 import { RoleSchema, VisibilitySchema } from "./common";
+import { ContentActionRefSchema } from "./content-refs";
 import { OrganizationsSchema, ActorTypePolicySchema, SourcePolicySchema } from "./organizations";
 import { ProfileSchema } from "./users";
 import { record as zodRecord } from "zod";
@@ -90,13 +91,15 @@ const ReadTeamSchema = TeamSchema.extend({
     })
   ),
   organization: optional(nullable(OrganizationsSchema.partial())),
-  // Enriched fields used for rendering embedded references in description
+  // Enriched fields used for rendering embedded references in description.
+  // assets stay loose here — AssetSchema imports TeamSchema (cycle).
   assets: optional(
     nullable(array(zodRecord(string(), any())))
   ),
   users: optional(
     nullable(array(ProfileSchema.partial()))
   ),
+  actions: optional(nullable(array(ContentActionRefSchema))),
 });
 
 const ReadTeamsSchema = array(

@@ -23,6 +23,7 @@ import {
   CreateAssetSchema,
   normalizeAssetConfigForParsing,
 } from "./assets";
+import { ContentActionRefSchema } from "./content-refs";
 import { TipTapSchema } from "./posts";
 import { ProfileSchema } from "./users";
 
@@ -84,6 +85,10 @@ const MessageSchema = object({
   json: TipTapSchema,
   text: string(),
   metadata: optional(nullable(record(string(), any()))),
+  // Resolved from message content embeds / links at read time
+  assets: optional(nullable(array(AssetSchema.partial()))),
+  users: optional(nullable(array(ProfileSchema.partial()))),
+  actions: optional(nullable(array(ContentActionRefSchema))),
 });
 
 export {

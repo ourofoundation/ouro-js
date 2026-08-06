@@ -106,6 +106,8 @@ const StatusSchema = zodEnum([
 
 const SourceSchema = zodEnum(["web", "api"]);
 
+const HttpMethodSchema = zodEnum(["GET", "POST", "PUT", "PATCH", "DELETE"]);
+
 export {
   RoleSchema,
   VisibilitySchema,
@@ -118,6 +120,7 @@ export {
   PermissionSchema,
   StatusSchema,
   SourceSchema,
+  HttpMethodSchema,
 };
 
 export type Role = z.infer<typeof RoleSchema>;
@@ -131,3 +134,4 @@ export type PurchaseAsset = z.infer<typeof PurchaseAssetSchema>;
 export type Permission = z.infer<typeof PermissionSchema>;
 export type Status = z.infer<typeof StatusSchema>;
 export type Source = z.infer<typeof SourceSchema>;
+export type HttpMethod = z.infer<typeof HttpMethodSchema>;

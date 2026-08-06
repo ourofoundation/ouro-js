@@ -107,6 +107,9 @@ const TYPED_ASSET_LINK_RE = new RegExp(
 /** @deprecated Prefer `post:<uuid>` etc.; still supported and resolved server-side. */
 const LEGACY_ASSET_LINK_RE = new RegExp(`^asset:(${UUID_RE})$`, "i");
 
+/** Route action link hrefs: `action:<uuid>` → history page for that run. */
+const ACTION_LINK_RE = new RegExp(`^action:(${UUID_RE})$`, "i");
+
 const VALID_ASSET_TYPES = new Set([
   "post",
   "dataset",
@@ -115,6 +118,8 @@ const VALID_ASSET_TYPES = new Set([
   "route",
   "quest",
 ]);
+
+export type ExtractedContentAction = { id: string; via: "link" };
 
 /**
  * Parse an inline link `href` for Ouro asset shorthands.
@@ -136,6 +141,16 @@ function parseAssetLinkShorthand(
   const legacy = LEGACY_ASSET_LINK_RE.exec(href);
   if (legacy) return { id: legacy[1], legacy: true };
   return null;
+}
+
+/**
+ * Parse an inline link `href` for a route action shorthand: `action:<uuid>`.
+ * Actions are not assets — callers must resolve them separately.
+ */
+function parseActionLinkShorthand(href: string): { id: string } | null {
+  const match = ACTION_LINK_RE.exec(href);
+  if (!match) return null;
+  return { id: match[1] };
 }
 
 /**
@@ -189,7 +204,7 @@ function getReferencesInContent(
   options?: { siteUrl?: string }
 ) {
   if (!json || !json?.content)
-    return { users: [], assets: [], linkedAssets: [] };
+    return { users: [], assets: [], actions: [], linkedAssets: [] };
   const content = json.content.map(extractContent).flat();
 
   const users = content
@@ -228,9 +243,11 @@ function getReferencesInContent(
       return unique;
     }, []);
 
-  // Extract asset references from link marks
+  // Extract asset / action references from link marks
   const linkedAssets: LinkedAssetRef[] = [];
+  const actions: ExtractedContentAction[] = [];
   const seenAssetIds = new Set(assets.map((a) => a.id));
+  const seenActionIds = new Set<string>();
   const seenLinkedKeys = new Set<string>();
 
   for (const item of content) {
@@ -239,6 +256,15 @@ function getReferencesInContent(
     if (!linkMark?.attrs?.href) continue;
 
     const href: string = linkMark.attrs.href;
+
+    const actionShorthand = parseActionLinkShorthand(href);
+    if (actionShorthand) {
+      if (!seenActionIds.has(actionShorthand.id)) {
+        seenActionIds.add(actionShorthand.id);
+        actions.push({ id: actionShorthand.id, via: "link" });
+      }
+      continue;
+    }
 
     const shorthand = parseAssetLinkShorthand(href);
     if (shorthand) {
@@ -273,12 +299,14 @@ function getReferencesInContent(
   return {
     users,
     assets,
+    actions,
     linkedAssets,
   };
 }
 
 export {
   getReferencesInContent,
+  parseActionLinkShorthand,
   parseAssetLinkShorthand,
   parseOuroAssetUrl,
 };
