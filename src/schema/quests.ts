@@ -79,7 +79,7 @@ const ContentSchema = object({
 const QuestItemBaseSchema = object({
   id: uuid(),
   quest_id: uuid(),
-  description: string(),
+  description: ContentSchema,
   status: QuestItemStatusSchema.default("pending"),
   auto_skipped: optional(nullable(string().or(any()))),
   status_before_auto_skip: optional(nullable(QuestItemStatusSchema)),
@@ -129,11 +129,15 @@ const QuestItemSchema = QuestItemBaseSchema;
  * `quest_id`, `created_by`, and lifecycle-derived fields
  * (`auto_skipped`, `status_before_auto_skip`).
  *
- * Accepts a plain description string as a convenience — it's lifted
- * into `{ description }` by the `union` below.
+ * Accepts a plain description string or TipTap Content as a convenience —
+ * a bare string is lifted into `{ description }` by the `union` below.
+ * The backend normalizes either shape with `toContentFromMaybeMarkdown`.
  */
 const CreateQuestItemObjectSchema = object({
-  description: string().min(1, { message: "Item description cannot be empty" }),
+  description: union([
+    string().min(1, { message: "Item description cannot be empty" }),
+    ContentSchema,
+  ]),
   type: optional(string()).default("task"),
   sort_order: optional(number().int()),
   assignee_id: optional(nullable(uuid())),
@@ -157,9 +161,13 @@ const CreateQuestItemObjectSchema = object({
 });
 
 const CreateQuestItemSchema = union([
-  string().transform((s) => ({ description: s })),
+  string()
+    .min(1, { message: "Item description cannot be empty" })
+    .transform((description) =>
+      CreateQuestItemObjectSchema.parse({ description })
+    ),
   CreateQuestItemObjectSchema,
-]).pipe(CreateQuestItemObjectSchema);
+]);
 
 // ── Quest ──────────────────────────────────────────────────────────────
 
@@ -205,10 +213,10 @@ const QuestSchema = AssetSchema.extend({
  * `CreatePostSchema` defaults `org_id`/`team_id` so non-frontend callers
  * don't have to know about `GLOBAL_ORG_ID`.
  *
- * The `items` field accepts either plain strings or full item objects —
- * the backend `createQuestItems`/`createQuest` paths already handle both
- * shapes, and `CreateQuestItemSchema` normalizes strings into
- * `{ description }`.
+ * The `items` field accepts either plain strings, TipTap Content objects, or
+ * full item objects — the backend `createQuestItems`/`createQuest` paths
+ * already handle both shapes, and `CreateQuestItemSchema` normalizes strings
+ * into `{ description }`.
  */
 const CreateQuestSchema = CreateAssetSchema.extend({
   asset_type: literal("quest").default("quest"),
