@@ -54,6 +54,9 @@ const EntryEvalStatusSchema = zodEnum([
 
 const EntryStatusSchema = zodEnum(["submitted", "accepted", "rejected"]);
 
+/** desc = higher scores rank first; asc = lower scores rank first */
+const LeaderboardOrderSchema = zodEnum(["desc", "asc"]);
+
 // ── Content (TipTap) ───────────────────────────────────────────────────
 // Posts/quests share the same rich description shape: { json, text }.
 // We mirror it locally here so the quest schema doesn't depend on posts.
@@ -94,8 +97,11 @@ const QuestItemBaseSchema = object({
   child_quest_id: optional(nullable(uuid())),
   eval_route_id: optional(nullable(uuid())),
   eval_score_path: optional(nullable(string())),
+  eval_categories_path: optional(nullable(string())),
   eval_pass_min: optional(nullable(number())),
   eval_pass_max: optional(nullable(number())),
+  leaderboard_enabled: optional(zodBoolean()).default(false),
+  leaderboard_order: optional(LeaderboardOrderSchema).default("desc"),
   submission_assets: optional(
     nullable(record(string(), QuestSubmissionAssetDeclarationSchema)),
   ),
@@ -151,8 +157,11 @@ const CreateQuestItemObjectSchema = object({
   child_quest_id: optional(nullable(uuid())),
   eval_route_id: optional(nullable(uuid())),
   eval_score_path: optional(nullable(string())),
+  eval_categories_path: optional(nullable(string())),
   eval_pass_min: optional(nullable(number())),
   eval_pass_max: optional(nullable(number())),
+  leaderboard_enabled: optional(zodBoolean()).default(false),
+  leaderboard_order: optional(LeaderboardOrderSchema).default("desc"),
   submission_assets: optional(
     nullable(record(string(), QuestSubmissionAssetDeclarationSchema)),
   ),
@@ -269,6 +278,7 @@ const EntrySchema = object({
   reviewed_at: optional(nullable(string())),
   eval_action_id: optional(nullable(uuid())),
   eval_score: optional(nullable(number())),
+  eval_category_scores: optional(nullable(record(string(), number()))),
   eval_status: optional(nullable(EntryEvalStatusSchema)),
   created_at: string(),
   updated_at: string(),
@@ -297,6 +307,7 @@ export {
   RewardCurrencySchema,
   EntryEvalStatusSchema,
   EntryStatusSchema,
+  LeaderboardOrderSchema,
   QuestSchema,
   QuestItemSchema,
   QuestItemBaseSchema,
@@ -316,6 +327,7 @@ export type QuestItemStatus = z.infer<typeof QuestItemStatusSchema>;
 export type RewardCurrency = z.infer<typeof RewardCurrencySchema>;
 export type EntryEvalStatus = z.infer<typeof EntryEvalStatusSchema>;
 export type EntryStatus = z.infer<typeof EntryStatusSchema>;
+export type LeaderboardOrder = z.infer<typeof LeaderboardOrderSchema>;
 export type Quest = z.infer<typeof QuestSchema>;
 export type QuestItem = z.infer<typeof QuestItemSchema>;
 export type CreateQuest = z.infer<typeof CreateQuestSchema>;
