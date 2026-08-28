@@ -61,6 +61,7 @@ const ConnectionTypeSchema = zodEnum([
   "component",
   "link",
   "completion",
+  "evaluation",
 ]);
 
 const ConnectionSchema = object({
