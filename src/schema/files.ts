@@ -8,7 +8,8 @@ import {
   optional,
   literal,
   discriminatedUnion,
-  nullable
+  nullable,
+  boolean
 } from "zod";
 
 import {
@@ -17,6 +18,15 @@ import {
   AssetMetadataSchema,
   normalizeAssetConfigForParsing,
 } from "./assets";
+
+const ZipArchiveMetadataSchema = object({
+  entry_count: number(),
+  file_count: number(),
+  directory_count: number(),
+  total_uncompressed_size: number(),
+  total_compressed_size: number(),
+  preview_truncated: boolean(),
+});
 
 const BaseFileMetadataSchema = object({
   id: uuid(), // The id of the file object
@@ -29,6 +39,7 @@ const BaseFileMetadataSchema = object({
   // If the file is an image, we store width and height
   width: optional(number()),
   height: optional(number()),
+  archive: optional(ZipArchiveMetadataSchema),
 });
 
 const BaseStubFileMetadataSchema = object({
@@ -80,7 +91,13 @@ const updateFileSchema = FileSchema.partial()
   })
   .transform((value) => normalizeAssetConfigForParsing(value));
 
-export { FileSchema, CreateFileSchema, updateFileSchema };
+export {
+  FileSchema,
+  CreateFileSchema,
+  updateFileSchema,
+  ZipArchiveMetadataSchema,
+};
 export type File = z.infer<typeof FileSchema>;
 export type CreateFile = z.infer<typeof CreateFileSchema>;
 export type UpdateFile = z.infer<typeof updateFileSchema>;
+export type ZipArchiveMetadata = z.infer<typeof ZipArchiveMetadataSchema>;

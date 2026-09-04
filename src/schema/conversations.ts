@@ -9,7 +9,8 @@ import {
   any,
   optional,
   nullable,
-  literal
+  literal,
+  union
 } from "zod";
 
 import {
@@ -71,6 +72,23 @@ const UpdateConversationSchema = BaseCreateConversationSchema.omit({
   // slug: true,
 }).partial().transform((value) => normalizeAssetConfigForParsing(value));
 
+const MessageReactionValueSchema = union([
+  literal("heart"),
+  literal("thumbs-up"),
+  literal("thumbs-down"),
+  literal("question"),
+  literal("skull"),
+]);
+
+const MessageReactionSchema = object({
+  id: uuid(),
+  message_id: uuid(),
+  conversation_id: uuid(),
+  user_id: uuid(),
+  value: MessageReactionValueSchema,
+  created_at: string(),
+});
+
 const MessageSchema = object({
   id: uuid(),
   conversation_id: uuid(),
@@ -85,6 +103,7 @@ const MessageSchema = object({
   json: TipTapSchema,
   text: string(),
   metadata: optional(nullable(record(string(), any()))),
+  reactions: optional(nullable(array(MessageReactionSchema))),
   // Resolved from message content embeds / links at read time
   assets: optional(nullable(array(AssetSchema.partial()))),
   users: optional(nullable(array(ProfileSchema.partial()))),
@@ -92,6 +111,8 @@ const MessageSchema = object({
 });
 
 export {
+  MessageReactionValueSchema,
+  MessageReactionSchema,
   MessageSchema,
   UpdateConversationSchema,
   CreateConversationSchema,
@@ -100,4 +121,6 @@ export {
 export type Conversation = z.infer<typeof ConversationSchema>;
 export type CreateConversation = z.infer<typeof CreateConversationSchema>;
 export type UpdateConversation = z.infer<typeof UpdateConversationSchema>;
+export type MessageReactionValue = z.infer<typeof MessageReactionValueSchema>;
+export type MessageReaction = z.infer<typeof MessageReactionSchema>;
 export type Message = z.infer<typeof MessageSchema>;

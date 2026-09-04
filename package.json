@@ -1,6 +1,6 @@
 {
   "name": "@ourofoundation/ouro-js",
-  "version": "3.7.9",
+  "version": "3.8.0",
   "description": "Interact with the Ouro platform in browser and node.js environments",
   "module": "./dist/index.js",
   "main": "./dist/index.cjs",
@@ -37,7 +37,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run build && node --test tests/*.test.mjs",
     "types": "tsc --emitDeclarationOnly --declaration",
     "prepublishOnly": "npm run build"
   },
