@@ -53,6 +53,7 @@ const UpdateProfileSchema = ProfileSchema.partial().omit({
   last_active: true,
   is_provisioned: true,
   claimed_at: true,
+  actor_type: true,
   // username: true, // once set, users cannot update their username
 });
 
