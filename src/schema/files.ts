@@ -60,7 +60,10 @@ const FileSchema = AssetSchema.extend({
 });
 
 const CreateFileSchema = discriminatedUnion("state", [
-  // Success state, file is ready
+  // Success state, file is ready. Keep `.default()` on this branch only so
+  // omitted `state` still creates a ready file. Zod 4.5 treats a defaulted
+  // discriminator as claiming `undefined`; two such branches throw
+  // `Duplicate discriminator value "undefined"` on first parse.
   CreateAssetSchema.extend({
     asset_type: literal("file").default("file"),
     state: literal("success").default("success"),
@@ -69,7 +72,7 @@ const CreateFileSchema = discriminatedUnion("state", [
   // In-progress state, file is being processed
   CreateAssetSchema.extend({
     asset_type: literal("file").default("file"),
-    state: literal("in-progress").default("in-progress"),
+    state: literal("in-progress"),
     metadata: StubFileMetadataSchema,
   }),
 ]).transform((value) => normalizeAssetConfigForParsing(value));
