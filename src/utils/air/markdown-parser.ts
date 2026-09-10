@@ -151,11 +151,50 @@ const userMentionExtension = {
   },
 };
 
+/** UUID-shaped ids (v4 and v7) used in typed asset shorthands. */
+const UUID_RE =
+  "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
+
+/**
+ * Collapsed `[dataset:<uuid>]` form. `(?!\\()` leaves `[label](dataset:<uuid>)`
+ * to the built-in markdown link tokenizer.
+ */
+const ASSET_WIKI_LINK_TOKEN = new RegExp(
+  `^\\[(post|dataset|file|service|route|quest|asset|action):(${UUID_RE})\\](?!\\()`,
+  "i"
+);
+
+const assetWikiLinkExtension = {
+  name: "assetWikiLink",
+  level: "inline",
+  start(src: string) {
+    const m = src.match(
+      /\[(?:post|dataset|file|service|route|quest|asset|action):/i
+    );
+    return m ? m.index : undefined;
+  },
+  tokenizer(src: string) {
+    const match = ASSET_WIKI_LINK_TOKEN.exec(src);
+    if (!match) return;
+    const href = `${match[1].toLowerCase()}:${match[2]}`;
+    return {
+      type: "assetWikiLink",
+      raw: match[0],
+      href,
+    };
+  },
+  renderer(token: any) {
+    const href = escapeHtmlAttr(token.href);
+    return `<a href="${href}">${href}</a>`;
+  },
+};
+
 marked.use({
   gfm: true,
   extensions: [
     assetComponentExtension,
     userMentionExtension,
+    assetWikiLinkExtension,
     katexBlockParser,
     katexInlineParser,
   ],
