@@ -210,14 +210,12 @@ export function getSubmissionAssetShape(
   if (item.eval_route_id && route) {
     const routeInputs = getRouteInputDeclarationsFromRoute(route);
     const pinnedKeys = Object.keys(pinned);
-    const materialized =
-      item.submission_assets &&
-      Object.keys(item.submission_assets).length > 0
-        ? item.submission_assets
-        : materializeContributorSubmissionAssets(routeInputs, pinnedKeys);
-    const contributorKeys = Object.keys(materialized);
+    const materialized = materializeContributorSubmissionAssets(
+      routeInputs,
+      pinnedKeys
+    );
     return {
-      contributorKeys,
+      contributorKeys: Object.keys(materialized),
       declarations: materialized,
       pinned,
     };
