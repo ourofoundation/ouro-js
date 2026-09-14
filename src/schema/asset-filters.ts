@@ -70,6 +70,9 @@ const AssetSearchFiltersSchema = object({
   /** Server-side personal/global scoping helper. */
   exclude_user_id: optional(uuid()),
   exclude_org_ids: optional(array(uuid())),
+  /** Hide a team (e.g. the global org's All team) from public/discover lists. */
+  exclude_team_id: optional(uuid()),
+  exclude_team_ids: optional(array(uuid())),
 });
 
 /**

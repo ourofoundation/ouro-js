@@ -35,6 +35,7 @@ const NotificationTypeSchema = zodEnum([
   "action-failed",
   "quest-entry",
   "quest-entry-accepted",
+  "quest-entry-eval-failed",
   "onboarding-complete",
   "onboarding-action-required",
   "route-earnings-milestone",
@@ -200,6 +201,7 @@ const QuestEntryAcceptedContentSchema = object({
   ...NotificationContentBase,
   quest: optional(NotificationQuestRefSchema),
   entry: optional(NotificationQuestEntryRefSchema),
+  source: optional(zodEnum(["review", "eval"])),
   reviewer: optional(
     nullable(
       object({
@@ -208,6 +210,14 @@ const QuestEntryAcceptedContentSchema = object({
       })
     )
   ),
+});
+
+const QuestEntryEvalFailedContentSchema = object({
+  ...NotificationContentBase,
+  quest: optional(NotificationQuestRefSchema),
+  entry: optional(NotificationQuestEntryRefSchema),
+  eval_status: optional(zodEnum(["failed", "errored"])),
+  eval_score: optional(nullable(number())),
 });
 
 const OnboardingCompleteContentSchema = object({
@@ -315,6 +325,10 @@ const NotificationSchema = discriminatedUnion("type", [
   notificationVariant("action-failed", ActionFailedContentSchema),
   notificationVariant("quest-entry", QuestEntryContentSchema),
   notificationVariant("quest-entry-accepted", QuestEntryAcceptedContentSchema),
+  notificationVariant(
+    "quest-entry-eval-failed",
+    QuestEntryEvalFailedContentSchema
+  ),
   notificationVariant("onboarding-complete", OnboardingCompleteContentSchema),
   notificationVariant(
     "onboarding-action-required",
@@ -362,6 +376,7 @@ export {
   ActionCompleteContentSchema,
   QuestEntryContentSchema,
   QuestEntryAcceptedContentSchema,
+  QuestEntryEvalFailedContentSchema,
   OnboardingCompleteContentSchema,
   OnboardingActionRequiredContentSchema,
   RouteEarningsMilestoneContentSchema,
