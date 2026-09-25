@@ -158,6 +158,15 @@ const InviteContentSchema = object({
       name: string(),
     })
   ),
+  team: optional(
+    object({
+      id: string(),
+      name: string(),
+    })
+  ),
+  kind: optional(
+    zodEnum(["added", "join_request", "join_approved", "join_rejected"])
+  ),
 });
 
 const PaymentContentSchema = object({

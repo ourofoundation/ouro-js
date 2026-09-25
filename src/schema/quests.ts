@@ -112,6 +112,7 @@ const QuestItemBaseSchema = object({
       array(
         object({
           key: string(),
+          label: optional(nullable(string())),
           required: zodBoolean().default(true),
           filters: object({
             assetType: optional(string()),

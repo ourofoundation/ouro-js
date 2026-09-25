@@ -1,6 +1,7 @@
 // Core schemas that are commonly used
 export * from "./schema/common";
 export * from "./schema/assets";
+export * from "./schema/renditions";
 export * from "./schema/asset-filters";
 export * from "./schema/content-refs";
 
@@ -31,6 +32,7 @@ export {
   fileTypes,
   getFileClassification,
   getFileFilterLabel,
+  getFileTypeName,
   normalizeExtension,
   getExtensionFromFileName,
   getExtensionFromMimeType,

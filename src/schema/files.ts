@@ -28,6 +28,26 @@ const ZipArchiveMetadataSchema = object({
   preview_truncated: boolean(),
 });
 
+// Crystal structure summary computed from a CIF's content. `null` means the
+// CIF was analyzed and could not be parsed.
+const StructureSummarySchema = object({
+  formula: string(),
+  elements: string().array(),
+  num_atoms: number(),
+  space_group: object({ symbol: string(), number: number() }),
+  crystal_system: string(),
+  lattice: object({
+    a: number(),
+    b: number(),
+    c: number(),
+    alpha: number(),
+    beta: number(),
+    gamma: number(),
+  }),
+  volume: number(), // Å³
+  density: number(), // g/cm³
+});
+
 const BaseFileMetadataSchema = object({
   id: uuid(), // The id of the file object
   path: string(), // The path of the file in storage
@@ -40,6 +60,7 @@ const BaseFileMetadataSchema = object({
   width: optional(number()),
   height: optional(number()),
   archive: optional(ZipArchiveMetadataSchema),
+  structure: optional(nullable(StructureSummarySchema)),
 });
 
 const BaseStubFileMetadataSchema = object({
@@ -99,8 +120,10 @@ export {
   CreateFileSchema,
   updateFileSchema,
   ZipArchiveMetadataSchema,
+  StructureSummarySchema,
 };
 export type File = z.infer<typeof FileSchema>;
 export type CreateFile = z.infer<typeof CreateFileSchema>;
 export type UpdateFile = z.infer<typeof updateFileSchema>;
 export type ZipArchiveMetadata = z.infer<typeof ZipArchiveMetadataSchema>;
+export type StructureSummary = z.infer<typeof StructureSummarySchema>;

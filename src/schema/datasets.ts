@@ -3,6 +3,7 @@ import {
   string,
   uuid,
   number,
+  boolean,
   array,
   literal,
   record,
@@ -78,16 +79,18 @@ const BaseDatasetMetadataSchema = object({
 /**
  * A single column from GET /datasets/:id/schema, enriched server-side.
  *
- * The FK fields come straight from get_table_schema. `semantic_type` is pure
- * inference: "reference" when the column has an FK to a referenceable table,
- * with `ref_kind` naming which one ("asset" | "action"). The optional
- * `asset_type` is the declared target-type hint from metadata.refs (display +
- * soft validation only, asset kind only). `semantic_type: "enum"` comes from
+ * The FK fields come straight from get_table_schema. `is_nullable` is the
+ * Postgres nullability of the column. `semantic_type` is pure inference:
+ * "reference" when the column has an FK to a referenceable table, with
+ * `ref_kind` naming which one ("asset" | "action"). The optional `asset_type`
+ * is the declared target-type hint from metadata.refs (display + soft
+ * validation only, asset kind only). `semantic_type: "enum"` comes from
  * metadata.enum_columns and exposes its known values.
  */
 const EnrichedDatasetSchemaFieldSchema = object({
   column_name: string(),
   data_type: string(),
+  is_nullable: optional(boolean()),
   fk_constraint_name: optional(nullable(string())),
   foreign_table_schema: optional(nullable(string())),
   foreign_table_name: optional(nullable(string())),

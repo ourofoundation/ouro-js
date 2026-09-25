@@ -64,8 +64,15 @@ const MembershipSchema = object({
   visibility: VisibilitySchema.default("public"),
 });
 
-export { OrganizationsSchema, MembershipSchema, ActorTypePolicySchema, SourcePolicySchema };
+export {
+  OrganizationsSchema,
+  MembershipSchema,
+  ActorTypePolicySchema,
+  SourcePolicySchema,
+  JoinPolicySchema,
+};
 export type Organization = z.infer<typeof OrganizationsSchema>;
 export type Membership = z.infer<typeof MembershipSchema>;
 export type ActorTypePolicy = z.infer<typeof ActorTypePolicySchema>;
 export type SourcePolicy = z.infer<typeof SourcePolicySchema>;
+export type JoinPolicy = z.infer<typeof JoinPolicySchema>;

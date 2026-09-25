@@ -14,7 +14,12 @@ import {
 
 import { RoleSchema, VisibilitySchema } from "./common";
 import { ContentActionRefSchema } from "./content-refs";
-import { OrganizationsSchema, ActorTypePolicySchema, SourcePolicySchema } from "./organizations";
+import {
+  OrganizationsSchema,
+  ActorTypePolicySchema,
+  SourcePolicySchema,
+  JoinPolicySchema,
+} from "./organizations";
 import { ProfileSchema } from "./users";
 import { record as zodRecord } from "zod";
 
@@ -35,11 +40,21 @@ const TeamSchema = object({
   visibility: VisibilitySchema,
   actor_type_policy: optional(nullable(ActorTypePolicySchema)),
   source_policy: optional(nullable(SourcePolicySchema)),
+  join_policy: optional(JoinPolicySchema).default("open"),
   userMembership: optional(
     nullable(
       object({
         user_id: uuid(),
         role: RoleSchema,
+      })
+    )
+  ),
+  userJoinRequest: optional(
+    nullable(
+      object({
+        id: uuid(),
+        status: string(),
+        created_at: string(),
       })
     )
   ),
@@ -67,6 +82,7 @@ const CreateTeamSchema = TeamSchema.extend({
 }).omit({
   organization: true,
   userMembership: true,
+  userJoinRequest: true,
   memberCount: true,
   members: true,
   created_at: true,

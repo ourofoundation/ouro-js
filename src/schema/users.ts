@@ -8,10 +8,38 @@ import {
   type z,
   optional,
   nullable,
-  uuid
+  uuid,
+  record,
+  any,
 } from "zod";
 
 const ActorTypeSchema = zodEnum(["base", "agent", "verified"]);
+
+const LanguageToolProviderPreferenceSchema = object({
+  route_id: nullable(uuid()),
+  options: record(string(), any()),
+}).catchall(any());
+
+const SpeechProviderPreferenceSchema =
+  LanguageToolProviderPreferenceSchema.extend({
+    voice: nullable(string()),
+  });
+
+const LanguageToolsPreferencesSchema = object({
+  language: string(),
+  translation: LanguageToolProviderPreferenceSchema,
+  speech: SpeechProviderPreferenceSchema,
+  transcription: optional(LanguageToolProviderPreferenceSchema),
+}).catchall(any());
+
+const PreferencesSchema = object({
+  id: uuid(),
+  user_id: uuid(),
+  notifications: optional(record(string(), any())),
+  webhooks: optional(array(record(string(), any()))),
+  onboarding: optional(record(string(), any())),
+  language_tools: optional(nullable(LanguageToolsPreferencesSchema)),
+}).catchall(any());
 
 const ProfileSchema = object({
   id: uuid(),
@@ -28,8 +56,8 @@ const ProfileSchema = object({
     array(
       object({
         value: string().url(),
-      })
-    )
+      }),
+    ),
   ),
   post_id: optional(nullable(uuid())),
   actor_type: ActorTypeSchema,
@@ -57,8 +85,19 @@ const UpdateProfileSchema = ProfileSchema.partial().omit({
   // username: true, // once set, users cannot update their username
 });
 
-export { ActorTypeSchema, ProfileSchema, ReadProfileSchema, UpdateProfileSchema };
+export {
+  ActorTypeSchema,
+  LanguageToolsPreferencesSchema,
+  PreferencesSchema,
+  ProfileSchema,
+  ReadProfileSchema,
+  UpdateProfileSchema,
+};
 export type ActorType = z.infer<typeof ActorTypeSchema>;
+export type LanguageToolsPreferences = z.infer<
+  typeof LanguageToolsPreferencesSchema
+>;
+export type Preferences = z.infer<typeof PreferencesSchema>;
 export type Profile = z.infer<typeof ProfileSchema>;
 export type UpdateProfile = z.infer<typeof UpdateProfileSchema>;
 export type ReadProfile = z.infer<typeof ReadProfileSchema>;

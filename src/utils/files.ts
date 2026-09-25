@@ -110,8 +110,20 @@ function getSafeFileExtension({
   );
 }
 
+/** Names for Ouro-specific formats whose extension means nothing to a reader. */
+const fileTypeNames: Record<string, string> = {
+  phasediagram: "phase diagram",
+};
+
+function getFileTypeName(extension: string | null | undefined): string | null {
+  const normalized = normalizeExtension(extension);
+  return normalized ? (fileTypeNames[normalized] ?? null) : null;
+}
+
 /** Display classification for a MIME type (asset badges, etc.). */
 function getFileClassification(type: string, extension: string) {
+  const name = getFileTypeName(extension);
+  if (name) return name;
   if (fileTypes.audio.includes(type)) return "audio";
   if (fileTypes.video.includes(type)) return "video";
   if (fileTypes.image.includes(type)) return "image";
@@ -127,6 +139,7 @@ export {
   fileTypes,
   getFileClassification,
   getFileFilterLabel,
+  getFileTypeName,
   normalizeExtension,
   getExtensionFromFileName,
   getExtensionFromMimeType,

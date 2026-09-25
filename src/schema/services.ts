@@ -68,25 +68,43 @@ const UpdateServiceSchema = ServiceSchema.partial()
 const ExecutionModeSchema = zodEnum(["sync", "async"]);
 
 // Asset type accepted in keyed `input_assets` / `output_assets` declarations.
-const RouteAssetType = zodEnum(["file", "dataset", "post"]);
+const RouteAssetTypeSchema = zodEnum(["file", "dataset", "post", "comment"]);
+const RouteAssetTypesSchema = array(RouteAssetTypeSchema).min(1);
 
 // File-type filter accepted on file-input declarations.
-const RouteInputFilter = zodEnum(FILE_FILTERS);
+const RouteInputFilterSchema = zodEnum(FILE_FILTERS);
 
 // Shape of a single keyed declaration in `routes.input_assets`. Plural
 // declarations are canonical; the legacy `input_type` and `input_file_*`
 // columns on the route row stay in sync as primary projections.
 const RouteInputAssetDeclarationSchema = object({
-  asset_type: RouteAssetType,
+  asset_type: RouteAssetTypeSchema,
+  /**
+   * Accepted source types for a shared input. `asset_type` remains the
+   * required legacy primary projection and must be one of these values.
+   */
+  asset_types: optional(RouteAssetTypesSchema),
   primary: optional(boolean()),
-  input_filter: optional(nullable(RouteInputFilter)),
+  input_filter: optional(nullable(RouteInputFilterSchema)),
   file_extensions: optional(nullable(array(string()))),
   contains_file_extensions: optional(nullable(array(string()))),
-}).catchall(any());
+  /** Contributor-facing title; JSON body key stays `name`. */
+  label: optional(nullable(string())),
+})
+  .catchall(any())
+  .superRefine((value, context) => {
+    if (value.asset_types && !value.asset_types.includes(value.asset_type)) {
+      context.addIssue({
+        code: "custom",
+        path: ["asset_types"],
+        message: "asset_types must include the legacy asset_type projection",
+      });
+    }
+  });
 
 // Shape of a single keyed declaration in `routes.output_assets`.
 const RouteOutputAssetDeclarationSchema = object({
-  asset_type: RouteAssetType,
+  asset_type: RouteAssetTypeSchema,
   primary: optional(boolean()),
   file_extensions: optional(nullable(array(string()))),
   contains_file_extensions: optional(nullable(array(string()))),
@@ -102,6 +120,41 @@ const RouteOutputAssetsSchema = record(
   RouteOutputAssetDeclarationSchema
 );
 
+const RouteCacheScopeSchema = zodEnum(["none", "user", "shared"]);
+
+const RouteCapabilityBaseSchema = object({
+  supported_languages: array(string()).min(1),
+  cache_scope: RouteCacheScopeSchema.default("none"),
+  cache_version: string().min(1),
+  trusted: boolean().default(false),
+  structured_content: boolean().default(false),
+}).catchall(any());
+
+const TextTranslationRouteCapabilitySchema = RouteCapabilityBaseSchema;
+
+const SpeechVoiceSchema = object({
+  id: string(),
+  name: optional(nullable(string())),
+  language: optional(nullable(string())),
+  languages: optional(nullable(array(string()))),
+}).catchall(any());
+
+const TextSpeechRouteCapabilitySchema = RouteCapabilityBaseSchema.extend({
+  voices: array(SpeechVoiceSchema),
+});
+
+const SpeechTranscribeRouteCapabilitySchema = RouteCapabilityBaseSchema;
+
+/**
+ * Semantic capabilities advertised by `x-ouro-capabilities`.
+ * Unknown keys are retained so later capability versions remain parseable.
+ */
+const RouteCapabilitiesSchema = object({
+  "text.translate.v1": optional(TextTranslationRouteCapabilitySchema),
+  "text.speech.v1": optional(TextSpeechRouteCapabilitySchema),
+  "speech.transcribe.v1": optional(SpeechTranscribeRouteCapabilitySchema),
+}).catchall(any());
+
 const RouteDetailSchema = object({
   id: string(),
   user_id: string(),
@@ -116,15 +169,16 @@ const RouteDetailSchema = object({
   input_assets: optional(nullable(RouteInputAssetsSchema)),
   // Legacy primary projection — kept synchronized with `input_assets` for
   // older clients, indexing, and quick asset-type lookups.
-  input_type: optional(nullable(RouteAssetType)),
-  input_filter: optional(nullable(RouteInputFilter)),
+  input_type: optional(nullable(RouteAssetTypeSchema)),
+  input_filter: optional(nullable(RouteInputFilterSchema)),
   input_file_extension: optional(nullable(string())),
   input_file_extensions: optional(nullable(array(string()))),
   // Canonical plural output declarations keyed by response body field name.
   output_assets: optional(nullable(RouteOutputAssetsSchema)),
   // Legacy primary projection — kept synchronized with `output_assets`.
-  output_type: optional(nullable(RouteAssetType)),
+  output_type: optional(nullable(RouteAssetTypeSchema)),
   output_file_extension: optional(nullable(string())),
+  capabilities: optional(nullable(RouteCapabilitiesSchema)),
   security: optional(nullable(record(string(), any()))),
   rate_limit: optional(nullable(number())),
   // Author-declared execution model: 'sync' = upstream returns the result
@@ -246,10 +300,19 @@ const ReadActionSchema = ActionSchema.extend({
 
 export {
   RouteSchema,
+  RouteAssetTypeSchema,
+  RouteAssetTypesSchema,
+  RouteInputFilterSchema,
   RouteInputAssetDeclarationSchema,
   RouteOutputAssetDeclarationSchema,
   RouteInputAssetsSchema,
   RouteOutputAssetsSchema,
+  RouteCacheScopeSchema,
+  SpeechVoiceSchema,
+  TextTranslationRouteCapabilitySchema,
+  TextSpeechRouteCapabilitySchema,
+  SpeechTranscribeRouteCapabilitySchema,
+  RouteCapabilitiesSchema,
   ServiceSchema,
   CreateServiceSchema,
   UpdateServiceSchema,
@@ -264,10 +327,25 @@ export type Service = z.infer<typeof ServiceSchema>;
 export type Route = z.infer<typeof RouteSchema>;
 export type RouteDetail = z.infer<typeof RouteDetailSchema>;
 export type RouteMetrics = z.infer<typeof RouteMetricsSchema>;
+export type RouteAssetType = z.infer<typeof RouteAssetTypeSchema>;
+export type RouteAssetTypes = z.infer<typeof RouteAssetTypesSchema>;
+export type RouteInputFilter = z.infer<typeof RouteInputFilterSchema>;
 export type RouteInputAssetDeclaration = z.infer<typeof RouteInputAssetDeclarationSchema>;
 export type RouteOutputAssetDeclaration = z.infer<typeof RouteOutputAssetDeclarationSchema>;
 export type RouteInputAssets = z.infer<typeof RouteInputAssetsSchema>;
 export type RouteOutputAssets = z.infer<typeof RouteOutputAssetsSchema>;
+export type RouteCacheScope = z.infer<typeof RouteCacheScopeSchema>;
+export type SpeechVoice = z.infer<typeof SpeechVoiceSchema>;
+export type TextTranslationRouteCapability = z.infer<
+  typeof TextTranslationRouteCapabilitySchema
+>;
+export type TextSpeechRouteCapability = z.infer<
+  typeof TextSpeechRouteCapabilitySchema
+>;
+export type SpeechTranscribeRouteCapability = z.infer<
+  typeof SpeechTranscribeRouteCapabilitySchema
+>;
+export type RouteCapabilities = z.infer<typeof RouteCapabilitiesSchema>;
 export type ExecutionMode = z.infer<typeof ExecutionModeSchema>;
 export type AuthType = z.infer<typeof AuthType>;
 export type Action = z.infer<typeof ActionSchema>;

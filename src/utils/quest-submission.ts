@@ -97,6 +97,7 @@ export type RouteInputDeclarationLike = {
   filter?: string | null;
   file_extensions?: string[] | null;
   input_file_extensions?: string[] | null;
+  label?: string | null;
 };
 
 export type RouteForSubmissionShape = {
@@ -158,17 +159,27 @@ export function getRouteInputDeclarationsFromRoute(
   return {};
 }
 
+function readDeclarationLabel(
+  declaration: RouteInputDeclarationLike
+): string | undefined {
+  if (typeof declaration.label !== "string") return undefined;
+  const label = declaration.label.trim();
+  return label.length > 0 ? label : undefined;
+}
+
 export function declarationToSubmissionDeclaration(
   declaration: RouteInputDeclarationLike
 ): QuestSubmissionAssetDeclaration {
   const extensions = readDeclarationExtensions(declaration);
   const filter = readDeclarationFilter(declaration);
+  const label = readDeclarationLabel(declaration);
   return {
     asset_type: declaration.asset_type as QuestSubmissionAssetDeclaration["asset_type"],
     primary: declaration.primary,
     input_filter: (filter ?? null) as QuestSubmissionAssetDeclaration["input_filter"],
     file_extensions: extensions.length > 0 ? extensions : null,
     required: true,
+    ...(label ? { label } : {}),
   };
 }
 
