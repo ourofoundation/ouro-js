@@ -1,15 +1,55 @@
 import { filterListToString } from "./dataset";
 import { GLOBAL_ORG_ID } from "../schema/constants";
 
+// Lowercase Greek letters spelled out so they survive the ASCII-only filter
+// ("Cu Kα" -> "cu-k-alpha", "κ_lat" -> "kappa-lat").
+const GREEK_LETTER_NAMES: Record<string, string> = {
+  α: "alpha",
+  β: "beta",
+  γ: "gamma",
+  δ: "delta",
+  ε: "epsilon",
+  ζ: "zeta",
+  η: "eta",
+  θ: "theta",
+  ι: "iota",
+  κ: "kappa",
+  λ: "lambda",
+  μ: "mu",
+  ν: "nu",
+  ξ: "xi",
+  ο: "omicron",
+  π: "pi",
+  ρ: "rho",
+  σ: "sigma",
+  ς: "sigma",
+  τ: "tau",
+  υ: "upsilon",
+  φ: "phi",
+  ϕ: "phi",
+  χ: "chi",
+  ψ: "psi",
+  ω: "omega",
+};
+
 const createNameUrlSlug = (name: string) => {
   return (
     name
       // Convert to lowercase
       .toLowerCase()
-      // Normalize unicode characters
-      .normalize("NFD")
+      // Compatibility-normalize: splits accents and folds superscripts/
+      // subscripts to plain digits ("cm⁻³" -> "cm-3", "m²" -> "m2")
+      .normalize("NFKD")
       // Remove diacritical marks
       .replace(/[\u0300-\u036f]/g, "")
+      // Keep decimals readable: "1.21" -> "1-21" rather than "121"
+      .replace(/(\d)\.(?=\d)/g, "$1-")
+      // Spell out Greek letters
+      .replace(/[\u03b1-\u03c9\u03d5]/g, (ch) =>
+        GREEK_LETTER_NAMES[ch] ? `-${GREEK_LETTER_NAMES[ch]}-` : ch
+      )
+      // Superscript/subscript minus and other dashes become hyphens
+      .replace(/[\u2010-\u2015\u2212\u207b\u208b]/g, "-")
       // Replace spaces, forward slashes, and underscores with hyphens
       .replace(/[\s\/\_]+/g, "-")
       // Remove special characters

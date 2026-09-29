@@ -47,6 +47,11 @@ export {
   KeyedAssetRefsSchema,
   KeyedAssetInputSchema,
   QuestSubmissionAssetDeclarationSchema,
+  type KeyedAssetRefs,
+  type KeyedAssetInput,
+  type QuestSubmissionAssetDeclaration,
+} from "./utils/quest-submission";
+export {
   getSubmissionAssetShape,
   materializeContributorSubmissionAssets,
   declarationToPickerFilters,
@@ -56,11 +61,8 @@ export {
   toRouteInputAssets,
   getRouteInputDeclarationsFromRoute,
   declarationToSubmissionDeclaration,
-  type KeyedAssetRefs,
-  type KeyedAssetInput,
-  type QuestSubmissionAssetDeclaration,
   type AssetDeclarationPickerFilters,
-} from "./utils/quest-submission";
+} from "./utils/quest-submission-helpers";
 export {
   type ExtractedContentAsset,
   type ExtractedContentAction,
