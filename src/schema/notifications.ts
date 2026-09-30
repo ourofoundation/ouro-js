@@ -36,6 +36,7 @@ const NotificationTypeSchema = zodEnum([
   "quest-entry",
   "quest-entry-accepted",
   "quest-entry-eval-failed",
+  "quest-entry-payout-failed",
   "onboarding-complete",
   "onboarding-action-required",
   "route-earnings-milestone",
@@ -229,6 +230,15 @@ const QuestEntryEvalFailedContentSchema = object({
   eval_score: optional(nullable(number())),
 });
 
+/** To the quest owner: an entry passed auto-eval but its reward couldn't be paid. */
+const QuestEntryPayoutFailedContentSchema = object({
+  ...NotificationContentBase,
+  quest: optional(NotificationQuestRefSchema),
+  entry: optional(NotificationQuestEntryRefSchema),
+  reason: optional(nullable(string())),
+  reason_code: optional(nullable(string())),
+});
+
 const OnboardingCompleteContentSchema = object({
   ...NotificationContentBase,
 });
@@ -338,6 +348,10 @@ const NotificationSchema = discriminatedUnion("type", [
     "quest-entry-eval-failed",
     QuestEntryEvalFailedContentSchema
   ),
+  notificationVariant(
+    "quest-entry-payout-failed",
+    QuestEntryPayoutFailedContentSchema
+  ),
   notificationVariant("onboarding-complete", OnboardingCompleteContentSchema),
   notificationVariant(
     "onboarding-action-required",
@@ -386,6 +400,7 @@ export {
   QuestEntryContentSchema,
   QuestEntryAcceptedContentSchema,
   QuestEntryEvalFailedContentSchema,
+  QuestEntryPayoutFailedContentSchema,
   OnboardingCompleteContentSchema,
   OnboardingActionRequiredContentSchema,
   RouteEarningsMilestoneContentSchema,
