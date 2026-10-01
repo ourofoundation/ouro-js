@@ -166,7 +166,13 @@ const InviteContentSchema = object({
     })
   ),
   kind: optional(
-    zodEnum(["added", "join_request", "join_approved", "join_rejected"])
+    zodEnum([
+      "added",
+      "join_request",
+      "join_approved",
+      "join_rejected",
+      "admin_promoted",
+    ])
   ),
 });
 
