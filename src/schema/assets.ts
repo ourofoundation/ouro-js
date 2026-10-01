@@ -111,8 +111,11 @@ const AssetSchema = object({
   monetization: MonetizationSchema,
   price: optional(nullable(number())),
   unit_cost: optional(nullable(number())),
-  cost_accounting: optional(nullable(zodEnum(["fixed", "variable"]))),
+  // runtime: unit_cost per second the route runs, capped per run
+  cost_accounting: optional(nullable(zodEnum(["fixed", "variable", "runtime"]))),
   cost_unit: optional(nullable(string())),
+  // Runtime pricing: the most seconds one run can be billed
+  max_billable_seconds: optional(nullable(number())),
   price_currency: optional(PriceCurrencySchema),
   stripe_product_id: optional(nullable(string())),
   stripe_price_id: optional(nullable(string())),

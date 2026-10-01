@@ -276,6 +276,8 @@ const ActionUsageRecordSchema = object({
   cost_unit: optional(nullable(string())),
   status: optional(nullable(string())),
   stripe_invoice_id: optional(nullable(string())),
+  // Runtime pricing: { runtime: { billed_seconds, rate, max_seconds, ... } }
+  metadata: optional(nullable(record(string(), any()))),
   created_at: optional(string()),
 });
 
