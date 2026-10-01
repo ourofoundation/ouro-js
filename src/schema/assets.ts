@@ -116,7 +116,14 @@ const AssetSchema = object({
   cost_unit: optional(nullable(string())),
   // Runtime pricing: the most seconds one run can be billed
   max_billable_seconds: optional(nullable(number())),
+  // The seller's primary currency; price / unit_cost mirror its price
   price_currency: optional(PriceCurrencySchema),
+  // Dual pricing: an independent price per currency (dollars / sats).
+  // null = not sold in that currency.
+  price_usd: optional(nullable(number())),
+  price_sats: optional(nullable(number())),
+  unit_cost_usd: optional(nullable(number())),
+  unit_cost_sats: optional(nullable(number())),
   stripe_product_id: optional(nullable(string())),
   stripe_price_id: optional(nullable(string())),
   stripe_meter_id: optional(nullable(string())),
