@@ -50,3 +50,22 @@ test("getReferencesInContent extracts wiki-links from plain text nodes", () => {
   assert.equal(refs.assets[0].id, DATASET_ID);
   assert.equal(refs.assets[0].assetType, "dataset");
 });
+
+test("parseMarkdown turns a [!NOTE] blockquote into a callout", () => {
+  const html = String(
+    parseMarkdown("> [!NOTE]\n> AI-generated. See [the API](https://example.com).\n>\n> Second paragraph.")
+  );
+  assert.match(html, /^<div data-type="callout" data-callout="note">/);
+  assert.match(html, /<p>AI-generated\. See <a href="https:\/\/example\.com">the API<\/a>\.<\/p>/);
+  assert.match(html, /<p>Second paragraph\.<\/p>/);
+  assert.doesNotMatch(html, /\[!NOTE\]|blockquote/);
+});
+
+test("parseMarkdown keeps the callout kind and leaves plain quotes alone", () => {
+  assert.match(
+    String(parseMarkdown("> [!warning]\n> Careful.")),
+    /data-callout="warning"/
+  );
+  assert.match(String(parseMarkdown("> Just a quote.")), /^<blockquote>/);
+  assert.match(String(parseMarkdown("> [!SOMETHING]\n> text")), /^<blockquote>/);
+});

@@ -189,6 +189,16 @@ const assetWikiLinkExtension = {
   },
 };
 
+export const CALLOUT_KINDS = [
+  "note",
+  "tip",
+  "important",
+  "warning",
+  "caution",
+] as const;
+
+const CALLOUT_MARKER = /^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\][ \t]*(?:\n|$)/i;
+
 marked.use({
   gfm: true,
   extensions: [
@@ -199,6 +209,17 @@ marked.use({
     katexInlineParser,
   ],
   renderer: {
+    // GitHub-style alerts: a blockquote opening with [!NOTE] (or TIP,
+    // IMPORTANT, WARNING, CAUTION) is a callout, not a quote.
+    blockquote(token: any) {
+      const match = CALLOUT_MARKER.exec(token.text ?? "");
+      if (!match) return false as any;
+      const kind = match[1].toLowerCase();
+      const body = (this as any).parser.parse(
+        marked.lexer(token.text.slice(match[0].length))
+      );
+      return `<div data-type="callout" data-callout="${kind}">${body}</div>\n`;
+    },
     list(token: any) {
       if (
         !token.ordered &&
