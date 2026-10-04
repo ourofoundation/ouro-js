@@ -71,7 +71,7 @@ function normalizeExtension(value: string | null | undefined): string | null {
   const safe = normalized.replace(/[^a-z0-9]/g, "");
   if (!safe) return null;
   if (/^\d+$/.test(safe)) return null;
-  if (safe.length > 12) return null;
+  if (safe.length > 16) return null;
   return safe;
 }
 
@@ -113,6 +113,8 @@ function getSafeFileExtension({
 /** Names for Ouro-specific formats whose extension means nothing to a reader. */
 const fileTypeNames: Record<string, string> = {
   phasediagram: "phase diagram",
+  bandstructure: "band structure",
+  dos: "density of states",
 };
 
 function getFileTypeName(extension: string | null | undefined): string | null {
