@@ -67,9 +67,18 @@ const UpdateServiceSchema = ServiceSchema.partial()
 
 const ExecutionModeSchema = zodEnum(["sync", "async"]);
 
-// Asset type accepted in keyed `input_assets` / `output_assets` declarations.
+// Asset type accepted in keyed `output_assets` declarations.
 const RouteAssetTypeSchema = zodEnum(["file", "dataset", "post", "comment"]);
-const RouteAssetTypesSchema = array(RouteAssetTypeSchema).min(1);
+// Inputs may also be a route: a quest's eval route receives a submitted
+// route and runs it.
+const RouteInputAssetTypeSchema = zodEnum([
+  "file",
+  "dataset",
+  "post",
+  "comment",
+  "route",
+]);
+const RouteAssetTypesSchema = array(RouteInputAssetTypeSchema).min(1);
 
 // File-type filter accepted on file-input declarations.
 const RouteInputFilterSchema = zodEnum(FILE_FILTERS);
@@ -78,7 +87,7 @@ const RouteInputFilterSchema = zodEnum(FILE_FILTERS);
 // declarations are canonical; the legacy `input_type` and `input_file_*`
 // columns on the route row stay in sync as primary projections.
 const RouteInputAssetDeclarationSchema = object({
-  asset_type: RouteAssetTypeSchema,
+  asset_type: RouteInputAssetTypeSchema,
   /**
    * Accepted source types for a shared input. `asset_type` remains the
    * required legacy primary projection and must be one of these values.
@@ -169,7 +178,7 @@ const RouteDetailSchema = object({
   input_assets: optional(nullable(RouteInputAssetsSchema)),
   // Legacy primary projection — kept synchronized with `input_assets` for
   // older clients, indexing, and quick asset-type lookups.
-  input_type: optional(nullable(RouteAssetTypeSchema)),
+  input_type: optional(nullable(RouteInputAssetTypeSchema)),
   input_filter: optional(nullable(RouteInputFilterSchema)),
   input_file_extension: optional(nullable(string())),
   input_file_extensions: optional(nullable(array(string()))),
@@ -306,6 +315,7 @@ const ReadActionSchema = ActionSchema.extend({
 export {
   RouteSchema,
   RouteAssetTypeSchema,
+  RouteInputAssetTypeSchema,
   RouteAssetTypesSchema,
   RouteInputFilterSchema,
   RouteInputAssetDeclarationSchema,
@@ -333,6 +343,7 @@ export type Route = z.infer<typeof RouteSchema>;
 export type RouteDetail = z.infer<typeof RouteDetailSchema>;
 export type RouteMetrics = z.infer<typeof RouteMetricsSchema>;
 export type RouteAssetType = z.infer<typeof RouteAssetTypeSchema>;
+export type RouteInputAssetType = z.infer<typeof RouteInputAssetTypeSchema>;
 export type RouteAssetTypes = z.infer<typeof RouteAssetTypesSchema>;
 export type RouteInputFilter = z.infer<typeof RouteInputFilterSchema>;
 export type RouteInputAssetDeclaration = z.infer<typeof RouteInputAssetDeclarationSchema>;

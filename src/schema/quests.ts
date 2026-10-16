@@ -46,6 +46,8 @@ const RewardCurrencySchema = zodEnum(["btc", "usd"]);
 
 const EntryEvalStatusSchema = zodEnum([
   "skipped",
+  // Waiting for the quest's owner to start the evaluation
+  "pending",
   "running",
   "passed",
   "failed",
@@ -53,6 +55,9 @@ const EntryEvalStatusSchema = zodEnum([
 ]);
 
 const EntryStatusSchema = zodEnum(["submitted", "accepted", "rejected"]);
+
+/** When an item's eval route runs: on submit, or when the quest's owner starts it */
+const EvalTriggerSchema = zodEnum(["submit", "owner"]);
 
 /** desc = higher scores rank first; asc = lower scores rank first */
 const LeaderboardOrderSchema = zodEnum(["desc", "asc"]);
@@ -106,6 +111,8 @@ const QuestItemBaseSchema = object({
     nullable(record(string(), QuestSubmissionAssetDeclarationSchema)),
   ),
   eval_static_inputs: optional(nullable(KeyedAssetRefsSchema)),
+  // When the eval route runs: on submit, or when the quest's owner starts it
+  eval_trigger: optional(EvalTriggerSchema),
   notes: optional(nullable(string())),
   contributor_keys: optional(
     nullable(
@@ -167,6 +174,8 @@ const CreateQuestItemObjectSchema = object({
     nullable(record(string(), QuestSubmissionAssetDeclarationSchema)),
   ),
   eval_static_inputs: optional(nullable(KeyedAssetRefsSchema)),
+  // When the eval route runs: on submit, or when the quest's owner starts it
+  eval_trigger: optional(EvalTriggerSchema),
   notes: optional(nullable(string())),
 });
 
@@ -309,6 +318,7 @@ export {
   EntryEvalStatusSchema,
   EntryStatusSchema,
   LeaderboardOrderSchema,
+  EvalTriggerSchema,
   QuestSchema,
   QuestItemSchema,
   QuestItemBaseSchema,
@@ -329,6 +339,7 @@ export type RewardCurrency = z.infer<typeof RewardCurrencySchema>;
 export type EntryEvalStatus = z.infer<typeof EntryEvalStatusSchema>;
 export type EntryStatus = z.infer<typeof EntryStatusSchema>;
 export type LeaderboardOrder = z.infer<typeof LeaderboardOrderSchema>;
+export type EvalTrigger = z.infer<typeof EvalTriggerSchema>;
 export type Quest = z.infer<typeof QuestSchema>;
 export type QuestItem = z.infer<typeof QuestItemSchema>;
 export type CreateQuest = z.infer<typeof CreateQuestSchema>;
