@@ -10,7 +10,8 @@ import {
   enum as zodEnum,
   optional,
   nullable,
-  boolean
+  boolean,
+  union,
 } from "zod";
 
 import { AssetTypeSchema, HttpMethodSchema, StatusSchema } from "./common";
@@ -111,12 +112,30 @@ const RouteInputAssetDeclarationSchema = object({
     }
   });
 
+const RouteOutputWhenScalarSchema = union([string(), number(), boolean()]);
+
+/**
+ * Request-body values that switch an output on: `{field: value | [values]}`.
+ * Every field must match (AND); a list matches any of its values. A field the
+ * caller leaves out is read from the request schema's `default`.
+ */
+const RouteOutputWhenSchema = record(
+  string(),
+  union([RouteOutputWhenScalarSchema, array(RouteOutputWhenScalarSchema).min(1)])
+);
+
 // Shape of a single keyed declaration in `routes.output_assets`.
 const RouteOutputAssetDeclarationSchema = object({
   asset_type: RouteAssetTypeSchema,
   primary: optional(boolean()),
   file_extensions: optional(nullable(array(string()))),
   contains_file_extensions: optional(nullable(array(string()))),
+  /** Only created when the request matches; see RouteOutputWhenSchema. */
+  when: optional(nullable(RouteOutputWhenSchema)),
+  /** May be absent depending on the run's results. */
+  optional: optional(nullable(boolean())),
+  /** Key of the output this one goes into while that output is created. */
+  embedded_in: optional(nullable(string())),
 }).catchall(any());
 
 const RouteInputAssetsSchema = record(
@@ -320,6 +339,7 @@ export {
   RouteInputFilterSchema,
   RouteInputAssetDeclarationSchema,
   RouteOutputAssetDeclarationSchema,
+  RouteOutputWhenSchema,
   RouteInputAssetsSchema,
   RouteOutputAssetsSchema,
   RouteCacheScopeSchema,
@@ -350,6 +370,7 @@ export type RouteInputAssetDeclaration = z.infer<typeof RouteInputAssetDeclarati
 export type RouteOutputAssetDeclaration = z.infer<typeof RouteOutputAssetDeclarationSchema>;
 export type RouteInputAssets = z.infer<typeof RouteInputAssetsSchema>;
 export type RouteOutputAssets = z.infer<typeof RouteOutputAssetsSchema>;
+export type RouteOutputWhen = z.infer<typeof RouteOutputWhenSchema>;
 export type RouteCacheScope = z.infer<typeof RouteCacheScopeSchema>;
 export type SpeechVoice = z.infer<typeof SpeechVoiceSchema>;
 export type TextTranslationRouteCapability = z.infer<

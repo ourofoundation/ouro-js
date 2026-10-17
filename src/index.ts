@@ -39,6 +39,17 @@ export {
   getSafeFileExtension,
   type FileFilter,
 } from "./utils/files";
+export {
+  getRequestBodyJsonSchema,
+  getRequestBodyProperty,
+  validateRouteOutputWhen,
+  routeOutputWhenMatches,
+  describeRouteOutputWhen,
+  resolveRouteOutputs,
+  type RouteOutputWhenValue,
+  type RouteOutputWhenSpec,
+  type ResolvedRouteOutput,
+} from "./utils/route-outputs";
 export { getAssetUrl } from "./utils/navigate";
 export { createUrlSlug } from "./utils/navigate";
 export { createNameUrlSlug } from "./utils/navigate";
