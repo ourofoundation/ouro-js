@@ -8,9 +8,9 @@
 // the run's results". `embedded_in` names the output this one goes into while
 // that output is on; otherwise it comes back on its own.
 //
-// Shared by the backend (spec validation, post-run checks) and the frontend
-// (the run form's "Saves" list). ouro-py's `ouro.utils.route_outputs` ports
-// the same rules; keep them in step.
+// Shared by the backend (spec validation, post-run checks, property `when`)
+// and the frontend (the run form's "Saves" list). ouro-py's
+// `ouro.utils.route_outputs` ports the matching rules; keep them in step.
 
 export type RouteOutputWhenValue = string | number | boolean;
 export type RouteOutputWhenSpec = Record<
@@ -134,64 +134,99 @@ function whenValues(
 }
 
 /**
- * Problems with the `when` conditions of a route's output declarations,
- * checked against its request body schema. Empty when everything is valid.
+ * Problems with one `when` (request-body field → value or values), checked
+ * against the route's request body schema; empty when valid. Messages read
+ * after "when", e.g. `field "x" is not a request body property`. Output and
+ * property declarations both take `when`, so both check it here.
  */
-export function validateRouteOutputWhen(
+export function validateRouteWhen(
+  when: unknown,
+  requestBody: unknown
+): string[] {
+  if (!isPlainObject(when) || Object.keys(when).length === 0) {
+    return ["must be an object of request fields"];
+  }
+  const schema = getRequestBodyJsonSchema(requestBody);
+  const properties = isPlainObject(schema?.properties)
+    ? (schema!.properties as Record<string, unknown>)
+    : null;
+  if (!properties) {
+    return ["needs a JSON request body with properties to check"];
+  }
+
+  const errors: string[] = [];
+  for (const [field, expected] of Object.entries(when)) {
+    const property = properties[field];
+    if (!isPlainObject(property)) {
+      const available = Object.keys(properties).join(", ") || "(none)";
+      errors.push(
+        `field "${field}" is not a request body property (available: ${available})`
+      );
+      continue;
+    }
+    const values = Array.isArray(expected) ? expected : [expected];
+    if (values.length === 0 || !values.every(isScalar)) {
+      errors.push(
+        `"${field}" must be a string, number or boolean, or a non-empty list of them`
+      );
+      continue;
+    }
+    const variants = propertyVariants(property);
+    const bad = values.filter(
+      (value) => !variants.some((variant) => variantAccepts(variant, value))
+    );
+    if (bad.length > 0) {
+      errors.push(
+        `"${field}" value ${bad
+          .map((value) => JSON.stringify(value))
+          .join(", ")} does not fit the property (allowed: ${describeAllowed(property)})`
+      );
+    }
+  }
+  return errors;
+}
+
+/**
+ * Problems with a route's output declarations, checked against its request
+ * body schema; empty when valid. `when` must name request fields with values
+ * they can take, and `embedded_in` must name another output that is a post
+ * and isn't embedded itself.
+ */
+export function validateRouteOutputs(
   outputAssets: unknown,
   requestBody: unknown
 ): string[] {
   if (!isPlainObject(outputAssets)) return [];
   const errors: string[] = [];
-  const schema = getRequestBodyJsonSchema(requestBody);
-  const properties = isPlainObject(schema?.properties)
-    ? (schema!.properties as Record<string, unknown>)
-    : null;
 
   for (const [name, declaration] of Object.entries(outputAssets)) {
     if (!isPlainObject(declaration)) continue;
-    const when = declaration.when;
-    if (when == null) continue;
     const label = `output "${name}"`;
 
-    if (!isPlainObject(when) || Object.keys(when).length === 0) {
-      errors.push(`${label}: when must be an object of request fields`);
-      continue;
-    }
-    if (!properties) {
-      errors.push(
-        `${label}: when needs a JSON request body with properties to check`
-      );
-      continue;
+    if (declaration.when != null) {
+      for (const problem of validateRouteWhen(declaration.when, requestBody)) {
+        errors.push(`${label}: when ${problem}`);
+      }
     }
 
-    for (const [field, expected] of Object.entries(when)) {
-      const property = properties[field];
-      if (!isPlainObject(property)) {
-        const available = Object.keys(properties).join(", ") || "(none)";
-        errors.push(
-          `${label}: when field "${field}" is not a request body property (available: ${available})`
-        );
-        continue;
-      }
-      const values = Array.isArray(expected) ? expected : [expected];
-      if (values.length === 0 || !values.every(isScalar)) {
-        errors.push(
-          `${label}: when "${field}" must be a string, number or boolean, or a non-empty list of them`
-        );
-        continue;
-      }
-      const variants = propertyVariants(property);
-      const bad = values.filter(
-        (value) => !variants.some((variant) => variantAccepts(variant, value))
+    const parentName = declaration.embedded_in;
+    if (parentName == null) continue;
+    const parent =
+      typeof parentName === "string" ? outputAssets[parentName] : undefined;
+    if (typeof parentName !== "string" || parentName === name) {
+      errors.push(`${label}: embedded_in must name another output`);
+    } else if (!isPlainObject(parent)) {
+      errors.push(
+        `${label}: embedded_in "${parentName}" is not an output of this route`
       );
-      if (bad.length > 0) {
-        errors.push(
-          `${label}: when "${field}" value ${bad
-            .map((value) => JSON.stringify(value))
-            .join(", ")} does not fit the property (allowed: ${describeAllowed(property)})`
-        );
-      }
+    } else if (parent.asset_type !== "post") {
+      errors.push(
+        `${label}: embedded_in "${parentName}" must be a post output, not ${parent.asset_type ?? "untyped"}`
+      );
+    } else if (parent.embedded_in != null) {
+      errors.push(
+        `${label}: embedded_in "${parentName}" is itself embedded; embed in the outer post`
+      );
     }
   }
   return errors;

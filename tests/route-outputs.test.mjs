@@ -6,7 +6,8 @@ import {
   describeRouteOutputWhen,
   resolveRouteOutputs,
   routeOutputWhenMatches,
-  validateRouteOutputWhen,
+  validateRouteOutputs,
+  validateRouteWhen,
 } from "../dist/index.js";
 
 // Shapes as FastAPI/Pydantic emits them.
@@ -41,12 +42,12 @@ const outputs = {
 };
 
 test("valid when conditions pass validation", () => {
-  assert.deepEqual(validateRouteOutputWhen(outputs, requestBody), []);
+  assert.deepEqual(validateRouteOutputs(outputs, requestBody), []);
   assert.equal(RouteOutputAssetsSchema.safeParse(outputs).success, true);
 });
 
 test("validation names unknown fields and values that don't fit", () => {
-  const errors = validateRouteOutputWhen(
+  const errors = validateRouteOutputs(
     {
       a: { asset_type: "file", when: { include_datasets: true } },
       b: { asset_type: "file", when: { include_dataset: "yes" } },
@@ -69,12 +70,42 @@ test("validation names unknown fields and values that don't fit", () => {
 });
 
 test("when without an inspectable JSON body is an error", () => {
-  const errors = validateRouteOutputWhen(
+  const errors = validateRouteOutputs(
     { a: { asset_type: "file", when: { x: true } } },
     null
   );
   assert.equal(errors.length, 1);
   assert.match(errors[0], /needs a JSON request body/);
+});
+
+test("a single when reports problems without a label", () => {
+  assert.deepEqual(validateRouteWhen({ include_dataset: true }, requestBody), []);
+  assert.deepEqual(validateRouteWhen({ nope: 1 }, requestBody), [
+    'field "nope" is not a request body property (available: composition, include_dataset, include_report, mode, trajectory, steps)',
+  ]);
+  assert.deepEqual(validateRouteWhen({}, requestBody), [
+    "must be an object of request fields",
+  ]);
+});
+
+test("embedded_in must name an outer post output", () => {
+  const errors = validateRouteOutputs(
+    {
+      report: { asset_type: "post" },
+      inner: { asset_type: "post", embedded_in: "report" },
+      ok: { asset_type: "file", embedded_in: "report" },
+      self: { asset_type: "file", embedded_in: "self" },
+      missing: { asset_type: "file", embedded_in: "nope" },
+      file_parent: { asset_type: "file", embedded_in: "ok" },
+      nested: { asset_type: "file", embedded_in: "inner" },
+    },
+    requestBody
+  );
+  assert.equal(errors.length, 4);
+  assert.match(errors[0], /output "self": embedded_in must name another output/);
+  assert.match(errors[1], /output "missing": embedded_in "nope" is not an output/);
+  assert.match(errors[2], /output "file_parent": .* must be a post output, not file/);
+  assert.match(errors[3], /output "nested": .* is itself embedded/);
 });
 
 test("matching reads the body, then the schema default", () => {

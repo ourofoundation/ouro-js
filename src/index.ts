@@ -42,7 +42,8 @@ export {
 export {
   getRequestBodyJsonSchema,
   getRequestBodyProperty,
-  validateRouteOutputWhen,
+  validateRouteWhen,
+  validateRouteOutputs,
   routeOutputWhenMatches,
   describeRouteOutputWhen,
   resolveRouteOutputs,
@@ -50,6 +51,15 @@ export {
   type RouteOutputWhenSpec,
   type ResolvedRouteOutput,
 } from "./utils/route-outputs";
+export {
+  getResponsePath,
+  fillResponseTemplate,
+  resolveResponseChartConfig,
+  responseChartRows,
+  resolveResponseCharts,
+  type ResponseChart,
+  type ResolvedResponseChart,
+} from "./utils/response-charts";
 export { getAssetUrl } from "./utils/navigate";
 export { createUrlSlug } from "./utils/navigate";
 export { createNameUrlSlug } from "./utils/navigate";
