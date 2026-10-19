@@ -12,6 +12,12 @@
 // and the frontend (the run form's "Saves" list). ouro-py's
 // `ouro.utils.route_outputs` ports the matching rules; keep them in step.
 
+import {
+  ASSET_LINEAGE_ROLES,
+  isAssetLineageRole,
+  type AssetLineageRole,
+} from "./lineage";
+
 export type RouteOutputWhenValue = string | number | boolean;
 export type RouteOutputWhenSpec = Record<
   string,
@@ -26,6 +32,8 @@ export type ResolvedRouteOutput = {
   optional: boolean;
   when: RouteOutputWhenSpec | null;
   embedded_in: string | null;
+  /** Declared lineage role; see lineage.ts for what an undeclared one takes. */
+  role: AssetLineageRole | null;
   /** The request switches this output on (always true without `when`). */
   active: boolean;
   /** Active and going into its active `embedded_in` parent. */
@@ -209,6 +217,12 @@ export function validateRouteOutputs(
       }
     }
 
+    if (declaration.role != null && !isAssetLineageRole(declaration.role)) {
+      errors.push(
+        `${label}: role must be one of ${ASSET_LINEAGE_ROLES.join(", ")}`
+      );
+    }
+
     const parentName = declaration.embedded_in;
     if (parentName == null) continue;
     const parent =
@@ -319,6 +333,7 @@ export function resolveRouteOutputs(
         ? (declaration.when as RouteOutputWhenSpec)
         : null,
       embedded_in: parent,
+      role: isAssetLineageRole(declaration.role) ? declaration.role : null,
       active: isActive,
       embedded: isActive && parent != null && active.get(parent) === true,
     };

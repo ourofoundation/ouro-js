@@ -52,6 +52,15 @@ export {
   type ResolvedRouteOutput,
 } from "./utils/route-outputs";
 export {
+  ASSET_LINEAGE_ROLES,
+  ASSET_LINEAGE_ROLE_LABELS,
+  ASSET_LINEAGE_ROLE_DESCRIPTIONS,
+  isAssetLineageRole,
+  resolveRouteOutputRole,
+  type AssetLineageRole,
+  type RouteOutputSource,
+} from "./utils/lineage";
+export {
   getResponsePath,
   fillResponseTemplate,
   resolveResponseChartConfig,

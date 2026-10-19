@@ -100,6 +100,7 @@ const CreateFileSchema = discriminatedUnion("state", [
 
 const updateFileSchema = FileSchema.partial()
   .omit({
+    family_id: true,
     user_id: true,
     id: true,
     created_at: true,

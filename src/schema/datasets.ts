@@ -165,6 +165,7 @@ const CreateDatasetFromSchemaSchema = CreateAssetSchema.extend({
 
 const updateDatasetSchema = DatasetSchema.partial()
   .omit({
+    family_id: true,
     user_id: true,
     id: true,
     created_at: true,

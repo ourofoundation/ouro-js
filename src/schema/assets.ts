@@ -26,6 +26,7 @@ import { TeamSchema } from "./teams";
 import { ProfileSchema } from "./users";
 import { uuidv7 } from "uuidv7";
 import { GLOBAL_ORG_ID, GLOBAL_TEAM_ID } from "./constants";
+import { ASSET_LINEAGE_ROLES } from "../utils/lineage";
 
 type AssetConfigInput = {
   org_id?: string | null;
@@ -92,6 +93,11 @@ const AssetSchema = object({
   team: optional(TeamSchema.partial()),
   parent_id: optional(nullable(uuid())),
   parent: optional(record(string(), any())),
+  /** What this asset is to `source_id`, the asset it came from (utils/lineage.ts). */
+  lineage_role: optional(zodEnum(ASSET_LINEAGE_ROLES)),
+  source_id: optional(nullable(uuid())),
+  /** Root of its lineage; null when it is a root. Kept by the database. */
+  family_id: optional(nullable(uuid())),
   license_id: string(),
   license: optional(record(string(), any())),
   asset_type: AssetTypeSchema,
@@ -142,6 +148,7 @@ const DEFAULT_ATTRIBUTION = { originality: "original" as const };
 
 const CreateAssetSchema = AssetSchema.partial()
   .omit({
+    family_id: true,
     user_id: true,
     user: true,
     organization: true,
@@ -174,6 +181,7 @@ const CreateAssetSchema = AssetSchema.partial()
 
 const UpdateAssetSchema = AssetSchema.partial().omit({
   id: true,
+  family_id: true,
   user_id: true,
   created_at: true,
   user: true,

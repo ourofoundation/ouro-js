@@ -23,6 +23,7 @@ import {
 } from "./assets";
 import { ProfileSchema } from "./users";
 import { FILE_FILTERS } from "../utils/files";
+import { ASSET_LINEAGE_ROLES } from "../utils/lineage";
 
 const AuthType = zodEnum(["Personal Access Token", "Ouro", "None", "OAuth 2.0"]);
 
@@ -136,6 +137,8 @@ const RouteOutputAssetDeclarationSchema = object({
   optional: optional(nullable(boolean())),
   /** Key of the output this one goes into while that output is created. */
   embedded_in: optional(nullable(string())),
+  /** The output's lineage role (what it is to its source); see utils/lineage.ts. */
+  role: optional(nullable(zodEnum(ASSET_LINEAGE_ROLES))),
 }).catchall(any());
 
 const RouteInputAssetsSchema = record(

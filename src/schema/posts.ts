@@ -104,6 +104,7 @@ const ListPostsSchema = array(PostSchema);
 
 const UpdatePostSchema = PostSchema.partial()
   .omit({
+    family_id: true,
     user_id: true,
     id: true,
     created_at: true,
