@@ -97,12 +97,16 @@ const PermissionSchema = object({
   last_updated: string(),
 });
 
+// Mirrors the DB `status` enum, shared by actions.status and assets.state.
+// "cancelled" is a final action status (stopped on request, not a failure);
+// no asset takes it.
 const StatusSchema = zodEnum([
   "queued",
   "in-progress",
   "timed-out",
   "success",
   "error",
+  "cancelled",
 ]);
 
 const SourceSchema = zodEnum(["web", "api"]);

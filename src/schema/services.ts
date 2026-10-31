@@ -219,6 +219,9 @@ const RouteDetailSchema = object({
   // until enough samples have been observed. When this differs from
   // execution_mode the route is misconfigured.
   observed_execution_mode: optional(nullable(ExecutionModeSchema)),
+  // Path on the service that stops a run, from `x-ouro-cancel` (async routes
+  // only). Null when the route's runs can't be cancelled.
+  cancel_path: optional(nullable(string())),
   last_updated: string(),
 });
 
@@ -274,6 +277,22 @@ const ActionSchema = object({
   // HTTP status code returned by the upstream service at ack time.
   upstream_status_code: optional(nullable(number())),
   finished_at: optional(nullable(string())),
+  // Set when the user asked to cancel the run. While status is still
+  // "in-progress" the service is stopping it; it ends as "cancelled".
+  cancel_requested_at: optional(nullable(string())),
+});
+
+/**
+ * `data` of `POST /actions/:id/cancel`. "cancelling" (202) while the service
+ * stops the run; "cancelled" (200) when it finished on the spot.
+ * `signal_delivered` is false when the service didn't accept the signal; Ouro
+ * then finishes the run itself after a grace period.
+ */
+const ActionCancelResultSchema = object({
+  action_id: uuid(),
+  status: zodEnum(["cancelling", "cancelled"]),
+  signal_delivered: boolean(),
+  cancel_requested_at: nullable(string()),
 });
 
 /**
@@ -297,6 +316,7 @@ const ReadActionRouteSchema = AssetSchema.partial().extend({
         output_assets: optional(nullable(any())),
         output_file_extension: optional(nullable(string())),
         input_assets: optional(nullable(any())),
+        cancel_path: optional(nullable(string())),
       })
     )
   ),
@@ -355,6 +375,7 @@ export {
   CreateServiceSchema,
   UpdateServiceSchema,
   ActionSchema,
+  ActionCancelResultSchema,
   ActionAssetRefSchema,
   ReadActionRouteSchema,
   ReadActionSchema,
@@ -389,6 +410,7 @@ export type RouteCapabilities = z.infer<typeof RouteCapabilitiesSchema>;
 export type ExecutionMode = z.infer<typeof ExecutionModeSchema>;
 export type AuthType = z.infer<typeof AuthType>;
 export type Action = z.infer<typeof ActionSchema>;
+export type ActionCancelResult = z.infer<typeof ActionCancelResultSchema>;
 export type ActionAssetRef = z.infer<typeof ActionAssetRefSchema>;
 export type ReadActionRoute = z.infer<typeof ReadActionRouteSchema>;
 export type ReadAction = z.infer<typeof ReadActionSchema>;
