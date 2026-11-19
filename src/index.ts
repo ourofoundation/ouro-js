@@ -15,6 +15,7 @@ export * from "./schema/comments";
 export * from "./schema/conversations";
 export * from "./schema/datasets";
 export * from "./schema/quests";
+export * from "./schema/evaluators";
 export * from "./schema/notifications";
 export * from "./schema/events";
 export * from "./schema/services";
@@ -69,6 +70,41 @@ export {
   type ResponseChart,
   type ResolvedResponseChart,
 } from "./utils/response-charts";
+export {
+  parseFormula,
+  evaluateFormula,
+  formulaRoots,
+  formulaAsPath,
+  pathToFormula,
+  FormulaError,
+  FORMULA_MAX_LENGTH,
+  FORMULA_RESERVED_NAMES,
+  type FormulaNode,
+} from "./utils/formula";
+export {
+  checkEvaluatorDefinition,
+  planEvaluation,
+  evaluatorRouteIds,
+  evaluatorContributorInputs,
+  evaluatorFixedAssets,
+  parseEvaluatorInputRef,
+  readStepOutputAsset,
+  normalizeCategoryScores,
+  singleRouteEvaluator,
+  singleRouteEvaluatorFields,
+  EVALUATOR_INPUTS_ROOT,
+  EVALUATOR_MAX_STEPS,
+  SINGLE_ROUTE_STEP,
+  type EvaluatorDefinition,
+  type EvaluatorStep,
+  type EvaluatorInputRef,
+  type EvaluatorAssetRef,
+  type EvaluationStepStatus,
+  type EvaluationStepState,
+  type EvaluationPlan,
+  type EvaluationResult,
+  type SingleRouteEvaluatorFields,
+} from "./utils/evaluator";
 export { getAssetUrl } from "./utils/navigate";
 export { createUrlSlug } from "./utils/navigate";
 export { createNameUrlSlug } from "./utils/navigate";

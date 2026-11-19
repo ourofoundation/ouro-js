@@ -28,6 +28,10 @@ import {
   KeyedAssetInputSchema,
   QuestSubmissionAssetDeclarationSchema,
 } from "../utils/quest-submission";
+import {
+  EvaluatorDefinitionShapeSchema,
+  EvaluationRunSchema,
+} from "./evaluators";
 
 // ── Enums ──────────────────────────────────────────────────────────────
 
@@ -56,7 +60,7 @@ const EntryEvalStatusSchema = zodEnum([
 
 const EntryStatusSchema = zodEnum(["submitted", "accepted", "rejected"]);
 
-/** When an item's eval route runs: on submit, or when the quest's owner starts it */
+/** When an item's evaluator runs: on submit, or when the quest's owner starts it */
 const EvalTriggerSchema = zodEnum(["submit", "owner"]);
 
 /** desc = higher scores rank first; asc = lower scores rank first */
@@ -100,6 +104,10 @@ const QuestItemBaseSchema = object({
   reward_currency: RewardCurrencySchema.default("btc"),
   reward_amount: number().int().nonnegative().default(0),
   child_quest_id: optional(nullable(uuid())),
+  // How entries are scored. Each change to an item's evaluator is a new one.
+  evaluator_id: optional(nullable(uuid())),
+  evaluator: optional(nullable(EvaluatorDefinitionShapeSchema)),
+  // The evaluator in its one-route form, set when it is a single route call
   eval_route_id: optional(nullable(uuid())),
   eval_score_path: optional(nullable(string())),
   eval_categories_path: optional(nullable(string())),
@@ -111,7 +119,7 @@ const QuestItemBaseSchema = object({
     nullable(record(string(), QuestSubmissionAssetDeclarationSchema)),
   ),
   eval_static_inputs: optional(nullable(KeyedAssetRefsSchema)),
-  // When the eval route runs: on submit, or when the quest's owner starts it
+  // When the evaluator runs: on submit, or when the quest's owner starts it
   eval_trigger: optional(EvalTriggerSchema),
   notes: optional(nullable(string())),
   contributor_keys: optional(
@@ -163,6 +171,11 @@ const CreateQuestItemObjectSchema = object({
   // the underlying column is `bigint`.
   reward_amount: optional(number().int().nonnegative()).default(0),
   child_quest_id: optional(nullable(uuid())),
+  // How entries are scored: steps that run existing routes, then gates and a
+  // score formula over their responses. null removes the item's evaluator.
+  evaluator: optional(nullable(EvaluatorDefinitionShapeSchema)),
+  // Shorthand for an evaluator that is one route call. Ignored when
+  // `evaluator` is given.
   eval_route_id: optional(nullable(uuid())),
   eval_score_path: optional(nullable(string())),
   eval_categories_path: optional(nullable(string())),
@@ -174,7 +187,7 @@ const CreateQuestItemObjectSchema = object({
     nullable(record(string(), QuestSubmissionAssetDeclarationSchema)),
   ),
   eval_static_inputs: optional(nullable(KeyedAssetRefsSchema)),
-  // When the eval route runs: on submit, or when the quest's owner starts it
+  // When the evaluator runs: on submit, or when the quest's owner starts it
   eval_trigger: optional(EvalTriggerSchema),
   notes: optional(nullable(string())),
 });
@@ -286,7 +299,9 @@ const EntrySchema = object({
   status: EntryStatusSchema,
   reviewer_id: optional(nullable(uuid())),
   reviewed_at: optional(nullable(string())),
-  eval_action_id: optional(nullable(uuid())),
+  eval_run_id: optional(nullable(uuid())),
+  // The entry's latest evaluation run, with each step's route run
+  eval_run: optional(nullable(EvaluationRunSchema.partial())),
   eval_score: optional(nullable(number())),
   eval_category_scores: optional(nullable(record(string(), number()))),
   eval_status: optional(nullable(EntryEvalStatusSchema)),
