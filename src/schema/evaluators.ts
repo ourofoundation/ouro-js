@@ -37,6 +37,11 @@ const EvaluatorStepSchema = object({
   body: optional(nullable(record(string(), any()))),
   /** Gates that must pass before this step starts. */
   after: optional(nullable(array(string()))),
+  /**
+   * The route gives back what it is given when that already came out of it
+   * (a relaxation): a run of it that made the step's input stands for the step.
+   */
+  idempotent: optional(nullable(zodBoolean())),
 });
 
 /**
@@ -98,6 +103,10 @@ const EvaluationRunStepSchema = object({
   action_id: optional(nullable(uuid())),
   /** Why the step was skipped or failed. */
   reason: optional(nullable(string())),
+  /** The evaluation run this step's result was taken from, when it wasn't run again. */
+  reused_from: optional(nullable(string())),
+  /** True when action_id is an earlier route run the step took over instead of running. */
+  reused_action: optional(nullable(zodBoolean())),
 });
 
 const EvaluationRunSchema = object({

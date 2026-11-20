@@ -36,6 +36,13 @@ export type EvaluatorStep = {
   body?: Record<string, unknown> | null;
   /** Gates that must pass before this step starts. */
   after?: string[] | null;
+  /**
+   * The route gives back what it is given when that already came out of it,
+   * as a relaxation does with a relaxed cell. When the step's one input was
+   * made by a run of this route with the step's settings, that run stands for
+   * the step, and the steps after it read the input itself.
+   */
+  idempotent?: boolean | null;
 };
 
 export type EvaluatorDefinition = {
@@ -290,6 +297,14 @@ export function checkEvaluatorDefinition(definition: unknown): string[] {
           `Step "${name}" input "${input}": ${(error as Error).message}`
         );
       }
+    }
+    if (step.idempotent != null && typeof step.idempotent !== "boolean") {
+      problems.push(`Step "${name}": idempotent must be true or false`);
+    } else if (
+      step.idempotent &&
+      Object.keys((step.inputs as Record<string, unknown>) ?? {}).length !== 1
+    ) {
+      problems.push(`Step "${name}": an idempotent step reads exactly one input`);
     }
     if (step.after != null && !Array.isArray(step.after)) {
       problems.push(`Step "${name}": after must be a list of gate names`);

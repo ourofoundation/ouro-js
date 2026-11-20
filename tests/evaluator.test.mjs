@@ -136,6 +136,23 @@ test("definitions: problems name the step, gate or formula", () => {
     checkEvaluatorDefinition({ steps: { a: { route_id: R(1), after: ["nope"] } }, score: "a.v" })[0],
     /waits on "nope", which is not a gate/
   );
+  assert.match(
+    checkEvaluatorDefinition({
+      steps: { a: { route_id: R(1), idempotent: true, inputs: { x: "inputs.s", y: "inputs.t" } } },
+      score: "a.v",
+    })[0],
+    /idempotent step reads exactly one input/
+  );
+  assert.match(
+    checkEvaluatorDefinition({ steps: { a: { route_id: R(1), idempotent: "yes" } }, score: "a.v" })[0],
+    /idempotent must be true or false/
+  );
+});
+
+test("definitions: an idempotent step keeps its flag through the schema", () => {
+  const relax = { route_id: R(1), inputs: { file: "inputs.structure" }, idempotent: true };
+  const parsed = EvaluatorDefinitionSchema.parse({ steps: { relax }, score: "relax.energy" });
+  assert.equal(parsed.steps.relax.idempotent, true);
 });
 
 const states = (overrides) => ({
